@@ -1,0 +1,6 @@
+{
+  "name": "Sea-fit AI Beauty Guide",
+  "description": "An ocean-minimalist, computer-vision and Gemini-powered smart beauty advisor featuring barefoot skin prep analysis, 12-season personal color diagnosis, interactive visual guides, and a dual-step AI feedback engine.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
