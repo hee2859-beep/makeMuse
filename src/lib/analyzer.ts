@@ -614,7 +614,7 @@ export function drawSeaFaceOverlay(
 export function drawPresetFaceModel(
   canvas: HTMLCanvasElement,
   presetType: 'neutral-sand' | 'warm-coral' | 'deep-abyss',
-  makeupOverlay: { eyelinerExtra?: number; overstepLip?: number; baseNoise?: number; appliedBlushColor?: string } = {}
+  makeupOverlay: { eyelinerExtra?: number; overstepLip?: number; baseNoise?: number; appliedBlushColor?: string; skipMakeup?: boolean } = {}
 ) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -686,23 +686,25 @@ export function drawPresetFaceModel(
   ctx.fill();
 
   // 4. Cheeks Blush (Redness)
-  // Left Cheek Blush
-  const lCheekGrad = ctx.createRadialGradient(ox - w / 6, oy + h / 15, 5, ox - w / 6, oy + h / 15, w / 7);
-  lCheekGrad.addColorStop(0, makeupOverlay.appliedBlushColor ? `${makeupOverlay.appliedBlushColor}CC` : `rgba(255, 82, 82, ${blushIntensity})`);
-  lCheekGrad.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = lCheekGrad;
-  ctx.beginPath();
-  ctx.arc(ox - w / 6, oy + h / 15, w / 6, 0, 2 * Math.PI);
-  ctx.fill();
+  if (!makeupOverlay.skipMakeup) {
+    // Left Cheek Blush
+    const lCheekGrad = ctx.createRadialGradient(ox - w / 6, oy + h / 15, 5, ox - w / 6, oy + h / 15, w / 7);
+    lCheekGrad.addColorStop(0, makeupOverlay.appliedBlushColor ? `${makeupOverlay.appliedBlushColor}CC` : `rgba(255, 82, 82, ${blushIntensity})`);
+    lCheekGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = lCheekGrad;
+    ctx.beginPath();
+    ctx.arc(ox - w / 6, oy + h / 15, w / 6, 0, 2 * Math.PI);
+    ctx.fill();
 
-  // Right Cheek Blush
-  const rCheekGrad = ctx.createRadialGradient(ox + w / 6, oy + h / 15, 5, ox + w / 6, oy + h / 15, w / 7);
-  rCheekGrad.addColorStop(0, makeupOverlay.appliedBlushColor ? `${makeupOverlay.appliedBlushColor}CC` : `rgba(255, 82, 82, ${blushIntensity})`);
-  rCheekGrad.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = rCheekGrad;
-  ctx.beginPath();
-  ctx.arc(ox + w / 6, oy + h / 15, w / 6, 0, 2 * Math.PI);
-  ctx.fill();
+    // Right Cheek Blush
+    const rCheekGrad = ctx.createRadialGradient(ox + w / 6, oy + h / 15, 5, ox + w / 6, oy + h / 15, w / 7);
+    rCheekGrad.addColorStop(0, makeupOverlay.appliedBlushColor ? `${makeupOverlay.appliedBlushColor}CC` : `rgba(255, 82, 82, ${blushIntensity})`);
+    rCheekGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = rCheekGrad;
+    ctx.beginPath();
+    ctx.arc(ox + w / 6, oy + h / 15, w / 6, 0, 2 * Math.PI);
+    ctx.fill();
+  }
 
   // 5. Draw Eyebrows & Eyes
   ctx.fillStyle = '#2C3E50';
@@ -720,21 +722,23 @@ export function drawPresetFaceModel(
   ctx.stroke();
 
   // 6. Draw Eyeliner (Simulates asymmetry)
-  const rightEyeOffset = makeupOverlay.eyelinerExtra !== undefined ? makeupOverlay.eyelinerExtra : 0; // if heavy right offset
-  ctx.strokeStyle = '#0F172A';
-  ctx.lineWidth = 3;
+  if (!makeupOverlay.skipMakeup) {
+    const rightEyeOffset = makeupOverlay.eyelinerExtra !== undefined ? makeupOverlay.eyelinerExtra : 0; // if heavy right offset
+    ctx.strokeStyle = '#0F172A';
+    ctx.lineWidth = 3;
 
-  // Left Eyeliner
-  ctx.beginPath();
-  ctx.moveTo(ox - w / 7 + 10, oy - h / 16 + 5);
-  ctx.quadraticCurveTo(ox - w / 7 - 10, oy - h / 16, ox - w / 7 - 20, oy - h / 16 - 2);
-  ctx.stroke();
+    // Left Eyeliner
+    ctx.beginPath();
+    ctx.moveTo(ox - w / 7 + 10, oy - h / 16 + 5);
+    ctx.quadraticCurveTo(ox - w / 7 - 10, oy - h / 16, ox - w / 7 - 20, oy - h / 16 - 2);
+    ctx.stroke();
 
-  // Right Eyeliner (Asymmetrical offset applied dynamically depending on slider value)
-  ctx.beginPath();
-  ctx.moveTo(ox + w / 7 - 10, oy - h / 16 + 5);
-  ctx.quadraticCurveTo(ox + w / 7 + 10, oy - h / 16, ox + w / 7 + 20, oy - h / 16 - 2 + rightEyeOffset);
-  ctx.stroke();
+    // Right Eyeliner (Asymmetrical offset applied dynamically depending on slider value)
+    ctx.beginPath();
+    ctx.moveTo(ox + w / 7 - 10, oy - h / 16 + 5);
+    ctx.quadraticCurveTo(ox + w / 7 + 10, oy - h / 16, ox + w / 7 + 20, oy - h / 16 - 2 + rightEyeOffset);
+    ctx.stroke();
+  }
 
   // Nose Bridge lines
   ctx.strokeStyle = 'rgba(0,0,0,0.06)';
@@ -746,24 +750,26 @@ export function drawPresetFaceModel(
   ctx.stroke();
 
   // 7. Draw Lipstick
-  const overstep = makeupOverlay.overstepLip || 0;
-  const lipColor = '#E30B5D'; // Bold Fuchsia Rose
-  
-  ctx.fillStyle = lipColor;
-  ctx.beginPath();
-  // Upper Lip
-  ctx.moveTo(ox - w / 12, oy + h / 4);
-  ctx.quadraticCurveTo(ox - w / 24, oy + h / 4.4 - overstep, ox, oy + h / 4.1);
-  ctx.quadraticCurveTo(ox + w / 24, oy + h / 4.4 - overstep, ox + w / 12, oy + h / 4);
-  ctx.quadraticCurveTo(ox, oy + h / 3.8, ox - w / 12, oy + h / 4);
-  ctx.fill();
+  if (!makeupOverlay.skipMakeup) {
+    const overstep = makeupOverlay.overstepLip || 0;
+    const lipColor = '#E30B5D'; // Bold Fuchsia Rose
+    
+    ctx.fillStyle = lipColor;
+    ctx.beginPath();
+    // Upper Lip
+    ctx.moveTo(ox - w / 12, oy + h / 4);
+    ctx.quadraticCurveTo(ox - w / 24, oy + h / 4.4 - overstep, ox, oy + h / 4.1);
+    ctx.quadraticCurveTo(ox + w / 24, oy + h / 4.4 - overstep, ox + w / 12, oy + h / 4);
+    ctx.quadraticCurveTo(ox, oy + h / 3.8, ox - w / 12, oy + h / 4);
+    ctx.fill();
 
-  // Lower Lip (Slight bleeding simulation if overstep > 3)
-  ctx.beginPath();
-  ctx.moveTo(ox - w / 12, oy + h / 4);
-  ctx.quadraticCurveTo(ox, oy + h / 3.3 + (overstep * 0.7), ox + w / 12, oy + h / 4);
-  ctx.quadraticCurveTo(ox, oy + h / 3.8, ox - w / 12, oy + h / 4);
-  ctx.fill();
+    // Lower Lip (Slight bleeding simulation if overstep > 3)
+    ctx.beginPath();
+    ctx.moveTo(ox - w / 12, oy + h / 4);
+    ctx.quadraticCurveTo(ox, oy + h / 3.3 + (overstep * 0.7), ox + w / 12, oy + h / 4);
+    ctx.quadraticCurveTo(ox, oy + h / 3.8, ox - w / 12, oy + h / 4);
+    ctx.fill();
+  }
 
   // 8. Roughness / skin imperfections points (Sobel filter fodder)
   ctx.fillStyle = 'rgba(0, 0, 0, 0.07)';

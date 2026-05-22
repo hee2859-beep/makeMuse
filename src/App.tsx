@@ -4,12 +4,13 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { SkinData, MakeupEvaluation, Tutorial } from "./types";
+import { SkinData, MakeupEvaluation, Tutorial, UserProfile } from "./types";
 import { initialTutorials, resolveTutorialUnlockStates } from "./lib/progress";
 import BareFaceAnalyzer from "./components/BareFaceAnalyzer";
 import PersonalColorMirror from "./components/PersonalColorMirror";
 import FinalPearlFeedback from "./components/FinalPearlFeedback";
 import TutorialMap from "./components/TutorialMap";
+import AdaptiveCalibrator, { SkinHistoryRecord } from "./components/AdaptiveCalibrator";
 import { Droplets, Sparkles, BookOpen, UserCheck, Flame, Medal, Compass, HelpCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -18,13 +19,37 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'prep' | 'color' | 'pearl'>('prep');
   const [activePreset, setActivePreset] = useState<'neutral-sand' | 'warm-coral' | 'deep-abyss'>('neutral-sand');
   
+  // Multi-user profile state loaded from local storage
+  const [profiles, setProfiles] = useState<UserProfile[]>(() => {
+    try {
+      const saved = localStorage.getItem("seafit_user_profiles_v2");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return [
+      { id: "prof_na", name: "김나경 (나)", skinType: "sensitive", notes: "민감성 홍조 에코 스킨, T존 약한 요철", avatarColor: "bg-[#007D85]" },
+      { id: "prof_minji", name: "박민지 (동생)", skinType: "dry", notes: "속당김 극심, 각질 들뜸 현상형", avatarColor: "bg-amber-500" },
+      { id: "prof_suhyun", name: "이수현 (친구)", skinType: "normal", notes: "수분 지수 준수한 쿨톤 수채화 피부", avatarColor: "bg-[#10B981]" }
+    ];
+  });
+
+  const [activeProfileId, setActiveProfileId] = useState<string>(() => {
+    return localStorage.getItem("seafit_active_profile_id_v2") || "prof_na";
+  });
+
+  const activeProfile = profiles.find(p => p.id === activeProfileId) || profiles[0];
+
   const [skinData, setSkinData] = useState<SkinData>({
     textureScore: 35,
     rednessScore: 28,
     moistureScore: 68,
     skinTone: "자연스러운 해풍빛 내추럴 샌드",
     personalColor: "Spring Warm Light",
-    analyzedAt: null
+    analyzedAt: null,
+    profileId: "prof_na"
   });
 
   const [prepScore, setPrepScore] = useState<number>(68);
@@ -52,6 +77,67 @@ export default function App() {
     splotchiness: 12
   });
 
+  // Persistent User upload skin chronic history log stored locally
+  const [skinHistory, setSkinHistory] = useState<SkinHistoryRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem("seafit_skin_history_v2");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return [
+      {
+        id: "hist_sample_01",
+        textureScore: 35,
+        rednessScore: 28,
+        moistureScore: 68,
+        skinTone: "자연스러운 해풍빛 내추럴 샌드",
+        personalColor: "Spring Warm Light",
+        analyzedAt: new Date(Date.now() - 24 * 3600 * 1000).toLocaleString('ko-KR'),
+        imageThumbnail: "",
+        sourceName: "시스템 기초 이력 진단",
+        prepScore: 68,
+        profileId: "prof_na"
+      },
+      {
+        id: "hist_sample_02",
+        textureScore: 18,
+        rednessScore: 15,
+        moistureScore: 84,
+        skinTone: "은은한 진주빛 모닝 베이지",
+        personalColor: "Summer Cool Light",
+        analyzedAt: new Date(Date.now() - 48 * 3600 * 1000).toLocaleString('ko-KR'),
+        imageThumbnail: "",
+        sourceName: "시스템 최적 광채 스캔",
+        prepScore: 85,
+        profileId: "prof_minji"
+      }
+    ];
+  });
+
+  // Update persistent storage
+  useEffect(() => {
+    try {
+      localStorage.setItem("seafit_skin_history_v2", JSON.stringify(skinHistory));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [skinHistory]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("seafit_user_profiles_v2", JSON.stringify(profiles));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [profiles]);
+
+  useEffect(() => {
+    localStorage.setItem("seafit_active_profile_id_v2", activeProfileId);
+  }, [activeProfileId]);
+
   // Calculate unlock thresholds dynamically based on current skin prep scores
   useEffect(() => {
     const rawTutorials = initialTutorials();
@@ -70,14 +156,111 @@ export default function App() {
     }
   }, [prepScore, makeupScore, skinData.personalColor]);
 
-  const handleAnalysisComplete = (newSkin: SkinData, calculatedPrepScore: number) => {
-    setSkinData(newSkin);
+  const handleAnalysisComplete = (
+    newSkin: SkinData, 
+    calculatedPrepScore: number, 
+    thumbnail?: string, 
+    sourceName?: string
+  ) => {
+    const skinWithProfile = {
+      ...newSkin,
+      profileId: activeProfileId
+    };
+    setSkinData(skinWithProfile);
     setPrepScore(calculatedPrepScore);
+    
+    // Log persistent calibration snapshot
+    const newRecord: SkinHistoryRecord = {
+      ...skinWithProfile,
+      id: `hist_${Date.now()}`,
+      imageThumbnail: thumbnail || "",
+      sourceName: sourceName || "얼굴 스킨 스캔",
+      prepScore: calculatedPrepScore,
+      analyzedAt: new Date().toLocaleString('ko-KR')
+    };
+
+    setSkinHistory(prev => [newRecord, ...prev]);
     
     // Auto-advance to Personal Color guide to represent completed stage 1
     setTimeout(() => {
       setActiveTab('color');
-    }, 1500);
+    }, 2500); // Slight delay allowing user to admire historic record logged
+  };
+
+  const handleClearHistory = () => {
+    setSkinHistory([]);
+  };
+
+  const handleRestoreFromHistory = (record: SkinHistoryRecord) => {
+    setSkinData({
+      textureScore: record.textureScore,
+      rednessScore: record.rednessScore,
+      moistureScore: record.moistureScore,
+      skinTone: record.skinTone,
+      personalColor: record.personalColor,
+      analyzedAt: record.analyzedAt,
+      profileId: record.profileId
+    });
+    setPrepScore(record.prepScore);
+    if (record.profileId) {
+      setActiveProfileId(record.profileId);
+    }
+  };
+
+  const handleAddMockUpload = (presetType: 'glowing' | 'reddish' | 'flaky') => {
+    let mockSkin: SkinData;
+    let mockName = "";
+    let mockScore = 0;
+
+    if (presetType === 'glowing') {
+      mockSkin = {
+        textureScore: 15,
+        rednessScore: 12,
+        moistureScore: 89,
+        skinTone: "생기있고 투명한 진주빛 베이지",
+        personalColor: "Summer Cool Light",
+        analyzedAt: new Date().toLocaleString('ko-KR'),
+        profileId: activeProfileId
+      };
+      mockName = "오아시스 극광 광채 샷 (glowing_skin.jpg)";
+      mockScore = 88;
+    } else if (presetType === 'reddish') {
+      mockSkin = {
+        textureScore: 42,
+        rednessScore: 68,
+        moistureScore: 45,
+        skinTone: "열감 가득 붉은빛 수렴 핑크",
+        personalColor: "Autumn Warm Warm",
+        analyzedAt: new Date().toLocaleString('ko-KR'),
+        profileId: activeProfileId
+      };
+      mockName = "작열 불뺨 홍조 극복 샷 (flushed_face.jpg)";
+      mockScore = 46;
+    } else {
+      mockSkin = {
+        textureScore: 72,
+        rednessScore: 36,
+        moistureScore: 22,
+        skinTone: "거칠고 건조한 모래밭 샌디 베이지",
+        personalColor: "Winter Cool Deep",
+        analyzedAt: new Date().toLocaleString('ko-KR'),
+        profileId: activeProfileId
+      };
+      mockName = "거친 사막 요철 들뜸 샷 (desert_dry.jpg)";
+      mockScore = 31;
+    }
+
+    const newRecord: SkinHistoryRecord = {
+      ...mockSkin,
+      id: `hist_${Date.now()}`,
+      imageThumbnail: "", // Empty thumbnail renders as camera icon
+      sourceName: mockName,
+      prepScore: mockScore
+    };
+
+    setSkinHistory(prev => [newRecord, ...prev]);
+    setSkinData(mockSkin);
+    setPrepScore(mockScore);
   };
 
   const handleEvaluationComplete = (newEval: MakeupEvaluation, calculatedMakeupScore: number) => {
@@ -238,37 +421,51 @@ export default function App() {
                   transition={{ duration: 0.2 }}
                 >
                   {activeTab === 'prep' && (
-                    <div className="bg-white/90 border border-[#E0EDEE] p-6 rounded-[24px] space-y-6 shadow-sm">
-                      <div>
-                        <h4 className="text-sm font-semibold text-brand-dark flex items-center gap-2 uppercase tracking-tight">
-                          쌩얼 보습 장벽 진단 <span className="text-xs bg-brand-light text-brand-primary px-2 py-0.5 rounded border border-[#D0E0E2] font-mono">Core Bare Face Prep</span>
-                        </h4>
-                        <p className="text-xs text-brand-dark/65 leading-relaxed mt-1.5">
-                          화장을 얹기 전, 눈가/이마/볼의 엣지 굴곡과 반사율을 감지하여 피부 밀착력을 수치화합니다. 왼쪽 '피부 스캔 시작' 버튼을 눌러보세요.
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="p-4 rounded-2xl bg-[#F8FAFB] border border-[#E0EDEE] text-xs space-y-1">
-                          <p className="font-semibold text-brand-primary">🔍 결 감지 원리 (Sobel Edge Detector)</p>
-                          <p className="text-brand-dark/65 leading-relaxed">
-                            뺨에 밀집된 피부 잔주름, 각질 및 붉은 포인터의 고주파 대비를 Sobel 필터 행렬 연산으로 검출합니다. 점수가 낮을수록 쌩얼 캔버스가 도화지처럼 매끄럽다는 뜻입니다.
+                    <div className="space-y-6">
+                      <div className="bg-white/90 border border-[#E0EDEE] p-6 rounded-[24px] space-y-6 shadow-sm">
+                        <div>
+                          <h4 className="text-sm font-semibold text-brand-dark flex items-center gap-2 uppercase tracking-tight">
+                            쌩얼 보습 장벽 진단 <span className="text-xs bg-brand-light text-brand-primary px-2 py-0.5 rounded border border-[#D0E0E2] font-mono">Core Bare Face Prep</span>
+                          </h4>
+                          <p className="text-xs text-brand-dark/65 leading-relaxed mt-1.5">
+                            화장을 얹기 전, 눈가/이마/볼의 엣지 굴곡과 반사율을 감지하여 피부 밀착력을 수치화합니다. 왼쪽 '피부 스캔 시작' 버튼을 눌러보세요.
                           </p>
                         </div>
-                        <div className="p-4 rounded-2xl bg-[#F8FAFB] border border-[#E0EDEE] text-xs space-y-1">
-                          <p className="font-semibold text-brand-primary">💧 수분지수 원리 (Forehead Luminance)</p>
-                          <p className="text-brand-dark/65 leading-relaxed">
-                            이마 정점 구역의 반사율을 측정하여 수분의 겹레이어 볼륨을 🌊수분 파도 연출 창으로 변환합니다. 보습 수치가 상승하면 다음 고난이도 코스들이 차례로 열립니다.
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="p-4 rounded-2xl bg-[#F8FAFB] border border-[#E0EDEE] text-xs space-y-1">
+                            <p className="font-semibold text-brand-primary">🔍 결 감지 원리 (Sobel Edge Detector)</p>
+                            <p className="text-brand-dark/65 leading-relaxed">
+                              뺨에 밀집된 피부 잔주름, 각질 및 붉은 포인터의 고주파 대비를 Sobel 필터 행렬 연산으로 검출합니다. 점수가 낮을수록 쌩얼 캔버스가 도화지처럼 매끄럽다는 뜻입니다.
+                            </p>
+                          </div>
+                          <div className="p-4 rounded-2xl bg-[#F8FAFB] border border-[#E0EDEE] text-xs space-y-1">
+                            <p className="font-semibold text-brand-primary">💧 수분지수 원리 (Forehead Luminance)</p>
+                            <p className="text-brand-dark/65 leading-relaxed">
+                              이마 정점 구역의 반사율을 측정하여 수분의 겹레이어 볼륨을 🌊수분 파도 연출 창으로 변환합니다. 보습 수치가 상승하면 다음 고난이도 코스들이 차례로 열립니다.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/20 flex gap-2.5 text-xs text-brand-primary">
+                          <HelpCircle className="w-5 h-5 flex-shrink-0 text-brand-primary mt-0.5" />
+                          <p className="leading-relaxed text-brand-dark">
+                            <strong>체험 팁:</strong> 왼쪽 스캐너 카드 하단에서 "플러시 코랄"을 마크하시면, 홍조 60% 이상과 거친 질감이 연출되며 실제 Sobel 스캔 결과에 반영되는 정밀함을 감상 및 분석해볼 수 있습니다.
                           </p>
                         </div>
                       </div>
 
-                      <div className="p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/20 flex gap-2.5 text-xs text-brand-primary">
-                        <HelpCircle className="w-5 h-5 flex-shrink-0 text-brand-primary mt-0.5" />
-                        <p className="leading-relaxed text-brand-dark">
-                          <strong>체험 팁:</strong> 왼쪽 스캐너 카드 하단에서 "플러시 코랄"을 마크하시면, 홍조 60% 이상과 거친 질감이 연출되며 실제 Sobel 스캔 결과에 반영되는 정밀함을 감상 및 분석해볼 수 있습니다.
-                        </p>
-                      </div>
+                      {/* Cumulative photo logging calibration dashboard */}
+                      <AdaptiveCalibrator
+                        history={skinHistory}
+                        onClearHistory={handleClearHistory}
+                        onAddMockUpload={handleAddMockUpload}
+                        onRestoreFromHistory={handleRestoreFromHistory}
+                        profiles={profiles}
+                        activeProfileId={activeProfileId}
+                        setActiveProfileId={setActiveProfileId}
+                        onUpdateProfiles={setProfiles}
+                      />
                     </div>
                   )}
 

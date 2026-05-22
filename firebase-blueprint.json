@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "profile": {
+      "title": "UserProfile",
+      "description": "User profile with skin type and notes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Profile unique ID" },
+        "name": { "type": "string", "description": "Display name of the user" },
+        "skinType": { "type": "string", "enum": ["dry", "oily", "sensitive", "normal"], "description": "General skin concern category" },
+        "notes": { "type": "string", "description": "Custom comments or notices" },
+        "avatarColor": { "type": "string", "description": "Tailwind color class for avatar representation" }
+      },
+      "required": ["id", "name", "skinType"]
+    },
+    "history": {
+      "title": "SkinHistoryRecord",
+      "description": "A skin diagnostic capture and evaluation record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Record unique ID" },
+        "profileId": { "type": "string", "description": "ID of the associated profile" },
+        "textureScore": { "type": "number", "description": "Texture score (0-100)" },
+        "rednessScore": { "type": "number", "description": "Redness score (0-100)" },
+        "moistureScore": { "type": "number", "description": "Moisture score (0-100)" },
+        "skinTone": { "type": "string", "description": "Detected skin tone name" },
+        "personalColor": { "type": "string", "description": "Identified seasonal personal color" },
+        "prepScore": { "type": "number", "description": "Computed final prep readiness score" },
+        "analyzedAt": { "type": "string", "description": "Timestamp string of completion" },
+        "imageThumbnail": { "type": "string", "description": "Base64 thumbnail representation of facial capture" },
+        "sourceName": { "type": "string", "description": "Source label of scan" }
+      },
+      "required": ["id", "profileId", "textureScore", "rednessScore", "moistureScore", "prepScore"]
+    }
+  },
+  "firestore": {
+    "/profiles/{profileId}": {
+      "schema": "profile",
+      "description": "User beauty profiling metadata"
+    },
+    "/history/{historyId}": {
+      "schema": "history",
+      "description": "User skin metric evaluation logs"
+    }
+  }
+}

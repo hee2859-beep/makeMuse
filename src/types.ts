@@ -18,6 +18,15 @@ export interface SkinData {
   skinTone: string;         // Light Beige, Natural Sandy, Deep Bronze, etc.
   personalColor: string;    // One of the 12 season types (e.g. Spring Warm Light)
   analyzedAt: string | null;
+  profileId?: string;       // Associates with a specific user profile
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  skinType: 'dry' | 'oily' | 'sensitive' | 'normal';
+  notes: string;
+  avatarColor: string; // Tailwinds color hex/class for visual grouping
 }
 
 export interface MakeupEvaluation {

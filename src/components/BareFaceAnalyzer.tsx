@@ -20,7 +20,7 @@ import { Camera, RefreshCw, Sparkles, Upload, HelpCircle, Droplet } from "lucide
 import { motion, AnimatePresence } from "motion/react";
 
 interface Props {
-  onAnalysisComplete: (data: SkinData, score: number) => void;
+  onAnalysisComplete: (data: SkinData, score: number, thumbnail?: string, sourceName?: string) => void;
   activePreset: 'neutral-sand' | 'warm-coral' | 'deep-abyss';
   setActivePreset: (type: 'neutral-sand' | 'warm-coral' | 'deep-abyss') => void;
   drawArActive: boolean;
@@ -39,6 +39,7 @@ export default function BareFaceAnalyzer({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputAfterRef = useRef<HTMLInputElement | null>(null);
 
   const [markers, setMarkers] = useState<FacialMarker[]>(defaultFaceMarkers());
   const [isLiveCamera, setIsLiveCamera] = useState<boolean>(false);
@@ -46,6 +47,18 @@ export default function BareFaceAnalyzer({
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   
+  // Real compare states to support comparing before and after makeup photos
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [uploadedImageSrc, setUploadedImageSrc] = useState<string | null>(null);
+  const [uploadedAfterFileName, setUploadedAfterFileName] = useState<string | null>(null);
+  const [afterImageSrc, setAfterImageSrc] = useState<string | null>(null);
+
+  const [activeCompareMode, setActiveCompareMode] = useState<'scan' | 'before' | 'after' | 'split'>('scan');
+  const [splitPercent, setSplitPercent] = useState<number>(50);
+
+  const uploadedImageRef = useRef<HTMLImageElement | null>(null);
+  const uploadedAfterImageRef = useRef<HTMLImageElement | null>(null);
+
   // Real-time analysis state
   const [analysisData, setAnalysisData] = useState<SkinData>({
     textureScore: 35,
@@ -62,7 +75,7 @@ export default function BareFaceAnalyzer({
   // Redraw preset face or video frame onto canvas
   useEffect(() => {
     redrawCanvas();
-  }, [activePreset, markers]);
+  }, [activePreset, markers, activeCompareMode, splitPercent, uploadedImageSrc, afterImageSrc]);
 
   // Handle live camera stream mapping
   useEffect(() => {
@@ -115,7 +128,7 @@ export default function BareFaceAnalyzer({
   // Redraw preset face or video frame onto canvas
   useEffect(() => {
     redrawCanvas();
-  }, [activePreset, markers, drawArActive, activeTutorial, makeupParams]);
+  }, [activePreset, markers, drawArActive, activeTutorial, makeupParams, uploadedImageSrc, afterImageSrc, activeCompareMode, splitPercent]);
 
   const drawArGuidelines = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
     if (drawArActive && activeTutorial && activeTutorial.arGuideLines) {
@@ -150,6 +163,74 @@ export default function BareFaceAnalyzer({
     }
   };
 
+  // Paint simulated makeup on top of photos using adjusted markers mapping
+  const drawVirtualMakeup = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
+    const lx = (markers.find(m => m.id === 'lip_left')?.xPercent || 42) / 100 * w;
+    const ly = (markers.find(m => m.id === 'lip_left')?.yPercent || 78) / 100 * h;
+    const rx = (markers.find(m => m.id === 'lip_right')?.xPercent || 58) / 100 * w;
+    const ry = (markers.find(m => m.id === 'lip_right')?.yPercent || 78) / 100 * h;
+
+    const eyeLx = (markers.find(m => m.id === 'eye_left_outer')?.xPercent || 28) / 100 * w;
+    const eyeLy = (markers.find(m => m.id === 'eye_left_outer')?.yPercent || 44) / 100 * h;
+    const eyeRx = (markers.find(m => m.id === 'eye_right_outer')?.xPercent || 72) / 100 * w;
+    const eyeRy = (markers.find(m => m.id === 'eye_right_outer')?.yPercent || 44) / 100 * h;
+
+    const cheekLx = (markers.find(m => m.id === 'cheek_left')?.xPercent || 35) / 100 * w;
+    const cheekLy = (markers.find(m => m.id === 'cheek_left')?.yPercent || 55) / 100 * h;
+    const cheekRx = (markers.find(m => m.id === 'cheek_right')?.xPercent || 65) / 100 * w;
+    const cheekRy = (markers.find(m => m.id === 'cheek_right')?.yPercent || 55) / 100 * h;
+
+    // 1. Cheek Blush (Soft Rose)
+    let blushGradL = ctx.createRadialGradient(cheekLx, cheekLy, 2, cheekLx, cheekLy, w / 7);
+    blushGradL.addColorStop(0, 'rgba(244, 63, 94, 0.45)');
+    blushGradL.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = blushGradL;
+    ctx.beginPath();
+    ctx.arc(cheekLx, cheekLy, w / 6, 0, 2 * Math.PI);
+    ctx.fill();
+
+    let blushGradR = ctx.createRadialGradient(cheekRx, cheekRy, 2, cheekRx, cheekRy, w / 7);
+    blushGradR.addColorStop(0, 'rgba(244, 63, 94, 0.45)');
+    blushGradR.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = blushGradR;
+    ctx.beginPath();
+    ctx.arc(cheekRx, cheekRy, w / 6, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // 2. Lips Lipstick
+    const midX = (lx + rx) / 2;
+    const midY = (ly + ry) / 2;
+    const rxX = Math.abs(rx - lx) / 1.7;
+    const ryY = Math.max(9, rxX / 2.8);
+
+    ctx.fillStyle = '#E30B5D';
+    ctx.beginPath();
+    ctx.ellipse(midX, midY, rxX, ryY, 0, 0, 2 * Math.PI);
+    ctx.fill();
+
+    ctx.fillStyle = '#FF4D80';
+    ctx.beginPath();
+    ctx.ellipse(midX, midY - ryY/6, rxX * 0.85, ryY * 0.65, 0, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // 3. Eyeliner wings
+    ctx.strokeStyle = '#0F172A';
+    ctx.lineWidth = 3.5;
+    ctx.lineCap = 'round';
+
+    // Left eye eyeliner wings
+    ctx.beginPath();
+    ctx.moveTo(eyeLx - 8, eyeLy + 2);
+    ctx.quadraticCurveTo(eyeLx, eyeLy, eyeLx + 10, eyeLy - 3 + (makeupParams?.eyelinerGap || 0));
+    ctx.stroke();
+
+    // Right eye eyeliner wings
+    ctx.beginPath();
+    ctx.moveTo(eyeRx + 8, eyeRy + 2);
+    ctx.quadraticCurveTo(eyeRx, eyeRy, eyeRx - 10, eyeRy - 3 + (makeupParams?.eyelinerGap || 0));
+    ctx.stroke();
+  };
+
   const redrawCanvas = () => {
     if (isLiveCamera) return; // Video thread takes care
     const canvas = canvasRef.current;
@@ -157,22 +238,133 @@ export default function BareFaceAnalyzer({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Draw base face preset based on choice, passing the dynamic makeup params as an overlay
-    drawPresetFaceModel(canvas, activePreset, {
-      eyelinerExtra: makeupParams.eyelinerGap,
-      overstepLip: makeupParams.lipOverstep,
-      baseNoise: makeupParams.splotchiness
-    });
+    const w = canvas.width;
+    const h = canvas.height;
 
-    // Draw face alignment mesh rules
-    drawSeaFaceOverlay(ctx, markers, canvas.width, canvas.height);
+    if (activeCompareMode === 'split') {
+      const splitX = w * splitPercent / 100;
 
-    // Draw training guidelines (AR overlay)
-    drawArGuidelines(ctx, canvas);
+      // Left Half: Before (Original naked skin)
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, splitX, h);
+      ctx.clip();
+      
+      if (uploadedImageSrc && uploadedImageRef.current) {
+        ctx.drawImage(uploadedImageRef.current, 0, 0, w, h);
+      } else {
+        drawPresetFaceModel(canvas, activePreset, {
+          eyelinerExtra: makeupParams.eyelinerGap,
+          overstepLip: makeupParams.lipOverstep,
+          baseNoise: makeupParams.splotchiness,
+          skipMakeup: true
+        });
+      }
+      ctx.restore();
+
+      // Right Half: After (Makeup)
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(splitX, 0, w - splitX, h);
+      ctx.clip();
+
+      if (afterImageSrc && uploadedAfterImageRef.current) {
+        // Show real uploaded after photo
+        ctx.drawImage(uploadedAfterImageRef.current, 0, 0, w, h);
+      } else if (uploadedImageSrc && uploadedImageRef.current) {
+        // Show simulated virtual makeup on top of uploaded photo
+        ctx.drawImage(uploadedImageRef.current, 0, 0, w, h);
+        drawVirtualMakeup(ctx, w, h);
+      } else {
+        // Show default preset with simulated makeup
+        drawPresetFaceModel(canvas, activePreset, {
+          eyelinerExtra: makeupParams.eyelinerGap,
+          overstepLip: makeupParams.lipOverstep,
+          baseNoise: makeupParams.splotchiness,
+          skipMakeup: false
+        });
+      }
+      ctx.restore();
+
+      // Slider boundary vertical line
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(splitX, 0);
+      ctx.lineTo(splitX, h);
+      ctx.stroke();
+
+      // Interactive handle circle
+      ctx.fillStyle = '#00CED1';
+      ctx.beginPath();
+      ctx.arc(splitX, h / 2, 12, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Split marker glyph
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('◀▶', splitX, h / 2);
+
+    } else if (activeCompareMode === 'before') {
+      if (uploadedImageSrc && uploadedImageRef.current) {
+        ctx.drawImage(uploadedImageRef.current, 0, 0, w, h);
+      } else {
+        drawPresetFaceModel(canvas, activePreset, {
+          eyelinerExtra: makeupParams.eyelinerGap,
+          overstepLip: makeupParams.lipOverstep,
+          baseNoise: makeupParams.splotchiness,
+          skipMakeup: true
+        });
+      }
+    } else if (activeCompareMode === 'after') {
+      if (afterImageSrc && uploadedAfterImageRef.current) {
+        ctx.drawImage(uploadedAfterImageRef.current, 0, 0, w, h);
+      } else if (uploadedImageSrc && uploadedImageRef.current) {
+        ctx.drawImage(uploadedImageRef.current, 0, 0, w, h);
+        drawVirtualMakeup(ctx, w, h);
+      } else {
+        drawPresetFaceModel(canvas, activePreset, {
+          eyelinerExtra: makeupParams.eyelinerGap,
+          overstepLip: makeupParams.lipOverstep,
+          baseNoise: makeupParams.splotchiness,
+          skipMakeup: false
+        });
+      }
+    } else {
+      // DEFAULT: 'scan' (Guides, highlights, and mesh)
+      if (uploadedImageSrc && uploadedImageRef.current) {
+        ctx.drawImage(uploadedImageRef.current, 0, 0, w, h);
+      } else {
+        drawPresetFaceModel(canvas, activePreset, {
+          eyelinerExtra: makeupParams.eyelinerGap,
+          overstepLip: makeupParams.lipOverstep,
+          baseNoise: makeupParams.splotchiness,
+          skipMakeup: false
+        });
+      }
+
+      // Draw face alignment mesh rules
+      drawSeaFaceOverlay(ctx, markers, w, h);
+
+      // Draw training guidelines (AR overlay)
+      drawArGuidelines(ctx, canvas);
+    }
   };
 
   const handlePresetChange = (type: 'neutral-sand' | 'warm-coral' | 'deep-abyss') => {
     setIsLiveCamera(false);
+    setUploadedFileName(null);
+    setUploadedImageSrc(null);
+    setAfterImageSrc(null);
+    setUploadedAfterFileName(null);
+    uploadedImageRef.current = null;
+    uploadedAfterImageRef.current = null;
+    setActiveCompareMode('scan');
     setActivePreset(type);
   };
 
@@ -188,6 +380,22 @@ export default function BareFaceAnalyzer({
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+          try {
+            const dataUrl = canvas.toDataURL("image/jpeg");
+            const img = new Image();
+            img.onload = () => {
+              uploadedImageRef.current = img;
+              setUploadedImageSrc(dataUrl);
+              setUploadedFileName("웹캠 스냅샷");
+              setIsLiveCamera(false);
+              
+              runScanningLogic(canvas, "웹캠 스냅샷", dataUrl);
+            };
+            img.src = dataUrl;
+            return;
+          } catch (e) {
+            console.error(e);
+          }
         }
       }
 
@@ -198,9 +406,32 @@ export default function BareFaceAnalyzer({
       setPrepScore(score);
       setIsAnalyzing(false);
 
-      // Notify parent component to update globally
-      onAnalysisComplete(results, score);
+      // Extract raw compressed thumbnail of active canvas
+      let thumb = "";
+      try {
+        thumb = canvas.toDataURL("image/jpeg", 0.35);
+      } catch (e) {
+        console.error(e);
+      }
+
+      const sourceName = uploadedFileName 
+        ? `사진 업로드: ${uploadedFileName}` 
+        : `시뮬레이션 모델: ${activePreset === 'neutral-sand' ? '내추럴 샌드' : activePreset === 'warm-coral' ? '플러시 코랄' : '딥 아비스'}`;
+
+      // Notify parent component to update globally with persistent parameters
+      onAnalysisComplete(results, score, thumb, sourceName);
     }, 950);
+  };
+
+  const runScanningLogic = (canvas: HTMLCanvasElement, sourceName: string, thumb: string) => {
+    const results = analyzeBareFaceCanvas(canvas, markers);
+    const score = calculatePrepScore(results);
+
+    setAnalysisData(results);
+    setPrepScore(score);
+    setIsAnalyzing(false);
+
+    onAnalysisComplete(results, score, thumb, sourceName);
   };
 
   // Custom marker drag adjustment over canvas coordinates
@@ -212,7 +443,20 @@ export default function BareFaceAnalyzer({
     const clickX = ((e.clientX - rect.left) / rect.width) * 100;
     const clickY = ((e.clientY - rect.top) / rect.height) * 100;
 
-    // Find closest marker within 6% bounding radius
+    if (activeCompareMode === "split") {
+      // Grab slider dividing line if clicked close to it (e.g. within 6% bounds)
+      if (Math.abs(clickX - splitPercent) < 7) {
+        setSelectedMarkerId("split_handle");
+        return;
+      }
+    }
+
+    if (activeCompareMode !== "scan") {
+      // Disable marker dragging when focusing purely on the visual comparison
+      return;
+    }
+
+    // Find closest marker within 7% bounding radius
     let closestId: string | null = null;
     let minDist = 7; // tolerance threshold
 
@@ -228,7 +472,7 @@ export default function BareFaceAnalyzer({
   };
 
   const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!selectedMarkerId || isLiveCamera) return; // Disable dragging in live feeds
+    if (!selectedMarkerId) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -236,6 +480,12 @@ export default function BareFaceAnalyzer({
     const currentX = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100));
     const currentY = Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100));
 
+    if (selectedMarkerId === "split_handle") {
+      setSplitPercent(currentX);
+      return;
+    }
+
+    if (isLiveCamera) return; // Disable dragging in live feeds
     setMarkers(prev => prev.map(m => m.id === selectedMarkerId ? { ...m, xPercent: currentX, yPercent: currentY } : m));
   };
 
@@ -258,34 +508,46 @@ export default function BareFaceAnalyzer({
     setIsDragOver(false);
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
-      processImageFile(files[0]);
+      processImageFile(files[0], false);
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      processImageFile(files[0]);
+      processImageFile(files[0], false);
     }
   };
 
-  const processImageFile = (file: File) => {
+  const handleFileSelectAfter = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      processImageFile(files[0], true);
+    }
+  };
+
+  const processImageFile = (file: File, isAfterMakeup: boolean = false) => {
     setIsLiveCamera(false);
     const reader = new FileReader();
     reader.onload = (event) => {
+      const resultStr = event.target?.result as string;
       const img = new Image();
       img.onload = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        // Draw the uploaded image with 1:1 fitting
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        // Draw the landmarks on top
-        drawSeaFaceOverlay(ctx, markers, canvas.width, canvas.height);
+        if (isAfterMakeup) {
+          uploadedAfterImageRef.current = img;
+          setAfterImageSrc(resultStr);
+          setUploadedAfterFileName(file.name);
+          setActiveCompareMode('split'); // Auto transition to sliding divide
+        } else {
+          uploadedImageRef.current = img;
+          setUploadedImageSrc(resultStr);
+          setUploadedFileName(file.name);
+          if (activeCompareMode !== 'before' && activeCompareMode !== 'after') {
+            setActiveCompareMode('scan');
+          }
+        }
       };
-      img.src = event.target?.result as string;
+      img.src = resultStr;
     };
     reader.readAsDataURL(file);
   };
@@ -325,11 +587,12 @@ export default function BareFaceAnalyzer({
             />
           )}
 
-          {/* Drag & Drop Overlay Hint */}
-          <div className="absolute bottom-5 left-5 right-5 pointer-events-none bg-brand-deep/90 backdrop-blur-md border border-brand-border/20 rounded-2xl p-2.5 flex items-center justify-between text-[11px] text-white/95">
-            <span className="flex items-center gap-1.5 font-mono text-[10px]">
-              <Upload className="w-3.5 h-3.5 text-brand-secondary" /> 이미지 드래그 또는 노드를 밀어 정밀 조율
-            </span>
+          {/* Compare mode indicator / watermark */}
+          <div className="absolute top-4 left-4 bg-brand-primary/80 backdrop-blur-md px-3.5 py-1.5 rounded-full text-[10px] text-white font-bold font-mono tracking-wide z-10 select-none shadow-sm">
+            {activeCompareMode === 'scan' ? "🔍 분석 & 가이드 수면" : 
+             activeCompareMode === 'before' ? "🧴 쌩얼 전 (Before)" : 
+             activeCompareMode === 'after' ? "💄 화장 후 (After)" : 
+             "🌓 반반 비교 슬라이더"}
           </div>
 
           <AnimatePresence>
@@ -357,7 +620,7 @@ export default function BareFaceAnalyzer({
         <div className="flex flex-wrap gap-2.5 justify-center mt-4.5 w-full max-w-[420px]">
           <button
             onClick={() => setIsLiveCamera(!isLiveCamera)}
-            className={`flex items-center gap-1.5 px-4.5 py-2.5 rounded-2xl text-xs font-semibold cursor-pointer transition-all ${isLiveCamera ? "bg-emerald-50 text-emerald-700 border border-emerald-300" : "bg-white hover:bg-[#F3F6F7] text-brand-dark/90 border border-brand-border shadow-sm"}`}
+            className={`flex items-center gap-1.5 px-4.5 py-2.5 rounded-2xl text-xs font-semibold cursor-pointer transition-all ${isLiveCamera ? "bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold" : "bg-white hover:bg-[#F3F6F7] text-brand-dark/90 border border-brand-border shadow-sm"}`}
             id="btn_webcam_toggle"
           >
             <Camera className="w-3.5 h-3.5" />
@@ -370,7 +633,7 @@ export default function BareFaceAnalyzer({
             id="btn_upload_photo"
           >
             <Upload className="w-3.5 h-3.5" />
-            사진 업로드
+            {uploadedImageSrc ? "쌩얼 사진 변경" : "쌩얼 사진 업로드"}
           </button>
           
           <input
@@ -382,12 +645,100 @@ export default function BareFaceAnalyzer({
           />
 
           <button
-            onClick={redrawCanvas}
+            onClick={() => {
+              // Reset uploading completely to standard preset
+              setUploadedImageSrc(null);
+              setUploadedFileName(null);
+              setAfterImageSrc(null);
+              setUploadedAfterFileName(null);
+              uploadedImageRef.current = null;
+              uploadedAfterImageRef.current = null;
+              setActiveCompareMode('scan');
+              setMarkers(defaultFaceMarkers());
+            }}
             className="p-2.5 rounded-2xl bg-white hover:bg-[#F3F6F7] text-brand-dark/90 border border-brand-border shadow-sm transition-all cursor-pointer"
-            title="얼굴 랜드마크 초기화"
+            title="얼굴 랜드마크 초기화 및 리셋"
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
+        </div>
+
+        {/* Comparison Control Desk Overlay */}
+        <div className="w-full max-w-[420px] bg-[#F4F9FA] border border-[#D5E6E8] rounded-[24px] p-4 mt-4 space-y-3 shadow-sm">
+          <div className="flex justify-between items-center">
+            <p className="text-[10px] font-mono font-bold text-brand-primary uppercase tracking-wider">Before / After Compare Deck</p>
+            {activeCompareMode === 'after' && !afterImageSrc && (
+              <span className="text-[9px] bg-brand-primary/15 text-brand-primary border border-brand-primary/25 px-2 py-0.5 rounded-full font-bold">
+                디지털 훈련 메이크업 적용됨
+              </span>
+            )}
+            {afterImageSrc && (
+              <span className="text-[9px] bg-emerald-500/15 text-emerald-700 border border-emerald-500/25 px-2 py-0.5 rounded-full font-bold">
+                화장 후 샷 비교 활성
+              </span>
+            )}
+          </div>
+
+          {/* Mode switch Tabs */}
+          <div className="grid grid-cols-4 gap-1.5 bg-white p-1 rounded-xl border border-brand-border/40">
+            {[
+              { id: 'scan', label: '수면가이드', tooltip: '수분계측 및 랜드마크 튜닝' },
+              { id: 'before', label: '화장 전', tooltip: '티 없이 맑은 쌩얼 원본' },
+              { id: 'after', label: '화장 후', tooltip: '가상 화장 덧칠 또는 화장 후 샷' },
+              { id: 'split', label: '커튼 비교', tooltip: '슬라이더 반반 커튼 비교' }
+            ].map(m => (
+              <button
+                key={m.id}
+                onClick={() => setActiveCompareMode(m.id as any)}
+                className={`py-1.5 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${activeCompareMode === m.id ? "bg-brand-primary text-white font-bold shadow-md" : "text-brand-dark/50 hover:text-brand-dark/90"}`}
+                title={m.tooltip}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Slider for sliding curtain split view */}
+          {activeCompareMode === 'split' && (
+            <div className="space-y-1.5 bg-white p-3 rounded-xl border border-brand-border/30">
+              <div className="flex justify-between text-[11px] text-brand-dark/60 font-semibold font-sans">
+                <span>🧴 쌩얼 (Before)</span>
+                <span className="font-mono text-brand-primary font-bold">{Math.round(splitPercent)}%</span>
+                <span>💄 화장 후 (After)</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={splitPercent}
+                onChange={(e) => setSplitPercent(Number(e.target.value))}
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-primary"
+              />
+              <p className="text-[9px] text-brand-dark/45 text-center leading-relaxed">
+                스캐너 스크린 위의 <strong>◀▶</strong> 아이콘이나 바로 위의 무지개 바를 손가락/마우스로 가볍게 밀어서 조율해보세요!
+              </p>
+            </div>
+          )}
+
+          {/* Action options for letting active user upload after photo */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-2.5 border-t border-brand-border/30 gap-2">
+            <span className="text-[10px] text-brand-dark/50 leading-relaxed">직접 화장을 마친 사진이 있으신가요?</span>
+            <button
+              onClick={() => fileInputAfterRef.current?.click()}
+              className="text-[10px] text-brand-primary font-bold hover:bg-[#EAF5F7] flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-brand-border/60 shadow-sm cursor-pointer transition-colors"
+            >
+              <Upload className="w-3 h-3 text-brand-secondary" />
+              화장 후 사진 업로드
+            </button>
+          </div>
+          
+          <input
+            ref={fileInputAfterRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileSelectAfter}
+          />
         </div>
 
         {cameraError && (
@@ -430,7 +781,7 @@ export default function BareFaceAnalyzer({
               <button
                 key={item.id}
                 onClick={() => handlePresetChange(item.id as any)}
-                className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${activePreset === item.id ? "bg-brand-primary/5 border-brand-primary text-brand-primary" : "bg-[#F8FAFB] border-[#E0EDEE] hover:border-brand-primary/50 text-brand-dark/80"}`}
+                className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${activePreset === item.id && !uploadedImageSrc ? "bg-brand-primary/5 border-brand-primary text-brand-primary" : "bg-[#F8FAFB] border-[#E0EDEE] hover:border-brand-primary/50 text-brand-dark/80"}`}
               >
                 <p className="text-xs font-bold leading-tight">{item.name}</p>
                 <p className="text-[9px] text-brand-dark/50 mt-1 whitespace-nowrap overflow-hidden text-ellipsis leading-none">{item.desc}</p>
