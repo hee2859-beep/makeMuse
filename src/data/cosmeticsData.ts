@@ -8,7 +8,7 @@ export interface CosmeticItem {
   name: string;
   shade: string;
   price: string;
-  type: 'lip' | 'blush' | 'eyeshadow' | 'base';
+  type: 'lip' | 'blush' | 'eyeshadow' | 'base' | 'mascara' | 'eyeliner';
   description: string;
 }
 
@@ -43,6 +43,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '22,000원',
         type: 'eyeshadow',
         description: '부드러운 라떼와 잘 익은 복숭아가 섞여 텁텁함 없는 여린 무펄/쉬머 베이지 팔레트입니다.'
+      },
+      {
+        brand: '에뛰드 (Etude)',
+        name: '컬 픽스 마스카라',
+        shade: '02 브라운 (Brown)',
+        price: '15,000원',
+        type: 'mascara',
+        description: '눈매가 텁텁해 보이지 않도록 섬세하고 부드럽게 세팅되는 자연스런 데일리 코코아 브라운 마스카라입니다.'
+      },
+      {
+        brand: '클리오 (CLIO)',
+        name: '샤프 쏘 심플 워터프루프 펜슬 라이너',
+        shade: '02 브라운 (Brown)',
+        price: '10,000원',
+        type: 'eyeliner',
+        description: '여리한 눈가 음영을 해치지 않고 연하고 부드러운 눈매를 연출해 주는 초슬림 코랄 브라운 슬라이딩 펜슬입니다.'
       }
     ],
     luxury: [
@@ -69,6 +85,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '78,000원',
         type: 'eyeshadow',
         description: '포근하고 따스한 골든 브론즈와 살구빛 코랄 밀착 텍스처로 우아한 입체감을 더해줍니다.'
+      },
+      {
+        brand: '샤넬 (Chanel Beauty)',
+        name: '이니미터블 마스카라 워터프루프',
+        shade: '30 브룬 (Brun)',
+        price: '48,000원',
+        type: 'mascara',
+        description: '선명하지만 인위적이지 않게 어우러지는 기품 넘치는 최고급 딥 카라멜 코코아 에디션 마스카라입니다.'
+      },
+      {
+        brand: '디올 (Dior Beauty)',
+        name: '디올쇼 온 스테이지 리퀴드 라이너',
+        shade: '781 매트 브라운 (Matte Brown)',
+        price: '45,000원',
+        type: 'eyeliner',
+        description: '눈에 우아한 생기를 부여하고 미끄러지듯 유영하는 명품 매트 웜 브라운 리퀴드 아트 라이너입니다.'
       }
     ]
   },
@@ -97,6 +129,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '21,000원',
         type: 'eyeshadow',
         description: '선명하고 또렷하지만 더티하지 않은 활기 넘치고 맑은 미디엄 브라운 골드 섀도우 라인입니다.'
+      },
+      {
+        brand: '클리오 (CLIO)',
+        name: '킬 래쉬 수퍼프루프 마스카라',
+        shade: '02 볼륨 컬링 (Volume Curling)',
+        price: '18,000원',
+        type: 'mascara',
+        description: '봄 브라이트의 활력 발랄한 마젠타/피치의 선명도를 아찔하게 고정하는 강력 익스트림 마스카라입니다.'
+      },
+      {
+        brand: '릴리바이레드 (Lilybyred)',
+        name: '서바이벌 펜 라이너 익스트림',
+        shade: '02 매트 브라운 (Matte Brown)',
+        price: '11,000원',
+        type: 'eyeliner',
+        description: '고채도 화사한 얼굴빛을 방해하지 않고 흐려짐 없는 완벽 정교 눈매를 보장하는 매트 라이너입니다.'
       }
     ],
     luxury: [
@@ -123,6 +171,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '125,000원',
         type: 'eyeshadow',
         description: '채도가 살며시 오른 따뜻하고 건강한 브론즈 쉬머 섀도우로 세련된 분위기를 안겨줍니다.'
+      },
+      {
+        brand: '입생로랑 (YSL Beauty)',
+        name: '마스카라 볼륨 에페 포 실 클래식',
+        shade: '02 리치 브라운 (Rich Brown)',
+        price: '46,000원',
+        type: 'mascara',
+        description: '그 어떤 고채도 광선 아래에서도 속눈썹 한 올 가닥을 풍부하고 실키하게 코팅하는 럭셔리 골드 브라운 마스카라입니다.'
+      },
+      {
+        brand: '샤넬 (Chanel)',
+        name: '스틸로 이으 워터프루프 에센셜',
+        shade: '20 에스프레소 (Espresso)',
+        price: '44,000원',
+        type: 'eyeliner',
+        description: '봄 웜의 열정과 우아를 가득 세우며 번짐 없이 깔끔하게 흘러가는 가을 에스프레소 초콜릿 라이너입니다.'
       }
     ]
   },
@@ -151,6 +215,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '34,000원',
         type: 'eyeshadow',
         description: '복숭아즙을 통째로 압축해 놓은 듯 화사한 피치 진저 따뜻한 9구 팔레트입니다.'
+      },
+      {
+        brand: '홀리카홀리카 (Holika Holika)',
+        name: '래쉬 고정 롱익스텐션 마스카라',
+        shade: '02 로즈 브라운 (Rose Brown)',
+        price: '12,500원',
+        type: 'mascara',
+        description: '따뜻한 가을 카라멜 무드를 전하며 번짐 없이 가뿐하게 롱앤컬을 완성하는 황금빛 브라운 마스카라입니다.'
+      },
+      {
+        brand: '롬앤 (rom&nd)',
+        name: '한올 샤프 브로우 펜슬 라이너',
+        shade: '03 멜로우 브라운 (Mellow Brown)',
+        price: '11,000원',
+        type: 'eyeliner',
+        description: '햇살 가득한 밀밭 색조 가을 웜 및 트루 웜 전용으로 나온 부드럽고 차분한 깊이의 매트 라이너입니다.'
       }
     ],
     luxury: [
@@ -177,6 +257,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '94,000원',
         type: 'eyeshadow',
         description: '대지의 온기를 듬뿍 담은 골든 소프트 테라코타, 비스킷 베이지 베이스 팩입니다.'
+      },
+      {
+        brand: '지방시 (Givenchy Beauty)',
+        name: '볼륨 디스터비아 래쉬 코트',
+        shade: '02 다크 브라운 (Dark Brown)',
+        price: '45,000원',
+        type: 'mascara',
+        description: '그윽하고 따스한 가을의 풍요로움을 속눈썹에 한 올 얹기 적합한 극세사 볼륨 갈색 광택 코트입니다.'
+      },
+      {
+        brand: '맥 (MAC)',
+        name: '아이 콜 인텐시브 펜슬 라이너',
+        shade: '테디 (Teddy)',
+        price: '32,000원',
+        type: 'eyeliner',
+        description: '명불허전 가을 웜의 바이블로 알려져 있는, 깊고 따스한 코코아 브론즈빛 골든 펄 장막 젤라이너입니다.'
       }
     ]
   },
@@ -205,6 +301,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '34,000원',
         type: 'eyeshadow',
         description: '말랑한 블루베리와 맑은 딸기 우유가 믹스된 화사하게 얼려진 쿨 라이트 전용 섀도우입니다.'
+      },
+      {
+        brand: '에뛰드 (Etude)',
+        name: '컬 픽스 파워 마스카라',
+        shade: '03 그레이 브라운 (Grey Brown)',
+        price: '15,000원',
+        type: 'mascara',
+        description: '붉거나 노란 기가 완전히 배제된 아스팔트 회브라운 계열로 여름 라이트를 시원하게 보존합니다.'
+      },
+      {
+        brand: '키스미 (Kissme)',
+        name: '히로인 메이크 프라임 슬림 라이너',
+        shade: '03 브라운 블랙 (Brown Black)',
+        price: '14,000원',
+        type: 'eyeliner',
+        description: '푸른빛 쿨톤 화장 위에 한 줄의 이질감 없이 그윽한 부드러운 하이브리드 소프트 차콜 라이너입니다.'
       }
     ],
     luxury: [
@@ -231,6 +343,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '96,000원',
         type: 'eyeshadow',
         description: '차가운 안개 로즈 핑크와 맑디 맑은 모브 실버 오팔 펄의 영롱한 하모니 팔레트입니다.'
+      },
+      {
+        brand: '디올 (Dior Beauty)',
+        name: '디올쇼 아이코닉 오버컬 마스카라',
+        shade: '090 블랙 (Black)',
+        price: '51,000원',
+        type: 'mascara',
+        description: '여름 쿨톤의 눈빛을 거울처럼 맑게 반사해 줄 칠흑 같은 탄소 프리미엄 마스카라입니다.'
+      },
+      {
+        brand: '샤넬 (Chanel)',
+        name: '스틸로 이으 워터프루프 라이너',
+        shade: '88 누아르 앙텐스 (Noir Intense)',
+        price: '44,000원',
+        type: 'eyeliner',
+        description: '번짐이나 뭉개짐 없이 눈가를 칼처럼 서늘하고 매력 있게 조율해 주는 명품 블랙 스무스 라이너입니다.'
       }
     ]
   },
@@ -259,6 +387,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '34,000원',
         type: 'eyeshadow',
         description: '여름 쿨 뮤트의 정석과도 같은 뮤티드 로즈 레이스, 타로 파우더 가득 차분한 팔레트입니다.'
+      },
+      {
+        brand: '롬앤 (rom&nd)',
+        name: '한올 올래쉬 실크 마스카라',
+        shade: 'L03 애쉬 카카오 (Ash Cacao)',
+        price: '13,000원',
+        type: 'mascara',
+        description: '여름 뮤트의 시그니처 맑은 회갈색 타로빛 눈매를 부드럽게 감쌀 차분한 애쉬 브라운 마스카라입니다.'
+      },
+      {
+        brand: '클리오 (CLIO)',
+        name: '샤프 쏘 심플 라이너 매트',
+        shade: '05 애쉬 브라운 (Ash Brown)',
+        price: '10,000원',
+        type: 'eyeliner',
+        description: '노란 성분을 한 방울도 섞지 않아 지적인 이슬비 같은 흐린 감성을 안겨주는 완벽 애쉬 그레이 라이너입니다.'
       }
     ],
     luxury: [
@@ -285,6 +429,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '98,000원',
         type: 'eyeshadow',
         description: '지적이고 도도한 가자미 그레이 카키와 모브 로즈 음영의 조화로운 우아함을 연출합니다.'
+      },
+      {
+        brand: '톰포드 (Tom Ford)',
+        name: '리치 바이올렛 메탈릭 마스카라',
+        shade: '02 캐시미어 브라운 (Cashmere)',
+        price: '72,000원',
+        type: 'mascara',
+        description: '풍요로우면서도 탁하고 매혹적인 회보라빛 머드를 한 장 두른 듯한 쿨 브라운 마스카라의 최정점입니다.'
+      },
+      {
+        brand: '바비브라운 (Bobbi Brown)',
+        name: '롱웨어 에센셜 젤 아이라이너',
+        shade: '에스프레소 잉크 (Espresso Ink)',
+        price: '46,000원',
+        type: 'eyeliner',
+        description: '보송 모브빛 섀도우 위 세련된 마감을 마치는 차갑고 묵직한 카키빛 감도는 딥에스프레소 젤입니다.'
       }
     ]
   },
@@ -313,6 +473,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '18,000원',
         type: 'eyeshadow',
         description: '이슬을 한 컵 머금은 쿨 블루 그레이 계열 로탈리아 로즈 4구 컴팩트입니다.'
+      },
+      {
+        brand: '클리오 (CLIO)',
+        name: '킬 래쉬 익스트림 컬링 마스카라',
+        shade: '01 퓨어 블랙 (Pure Black)',
+        price: '18,000원',
+        type: 'mascara',
+        description: '시린 밤하늘의 완벽 퓨어 블랙 안색 코팅을 위해 가벼우면서 아찔하게 속눈썹을 정합해 줍니다.'
+      },
+      {
+        brand: '토니모리 (Tonymoly)',
+        name: '이지터치 프로 젤 아이라이너',
+        shade: '01 블랙 (Black)',
+        price: '10,800원',
+        type: 'eyeliner',
+        description: '번짐이나 흐려짐을 전혀 타협치 않는 완벽 정밀 마감의 클래식 쿨 블랙 단독 라이너입니다.'
       }
     ],
     luxury: [
@@ -339,6 +515,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '40,000원',
         type: 'eyeshadow',
         description: '따뜻함이 전혀 없는 독보적 한기를 가진 아이시 보랏빛 라벤더 허브 브라운 음영 베이스입니다.'
+      },
+      {
+        brand: '로라메르시에 (Laura Mercier)',
+        name: '캐비어 인텐스 익스트림 벨벳 마스카라',
+        shade: '01 매트 블랙 (Matte Black)',
+        price: '44,000원',
+        type: 'mascara',
+        description: '오차 없는 칠흑 광선을 뿜으며 뭉침 없이 인형 같은 선명함을 박제해 주는 울트라 벨벳 마스카라입니다.'
+      },
+      {
+        brand: '지방시 (Givenchy Beauty)',
+        name: '라이너 디스터비아 울트라 리퀴드',
+        shade: '01 인텐스 블랙 (Intense Black)',
+        price: '47,000원',
+        type: 'eyeliner',
+        description: '피부를 얼음 송곳처럼 차갑게 극대화 부각해 주는 고밀도 리퀴드 포뮬러 펜 라이너입니다.'
       }
     ]
   },
@@ -367,6 +559,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '34,000원',
         type: 'eyeshadow',
         description: '벨벳 코코아와 차분한 아일랜드 브론즈빛 웜 무광 음영을 한 데 담은 보드라운 팔레트입니다.'
+      },
+      {
+        brand: '키스미 (Kissme)',
+        name: '히로인 메이크 헤비로테이션 마스카라',
+        shade: '02 로즈 브라운 (Rose Brown)',
+        price: '15,000원',
+        type: 'mascara',
+        description: '가을의 깊은 단풍잎에서 추출한 듯 고급스럽고 평온한 붉은빛 감도는 그윽한 로즈 브라운 마스카라입니다.'
+      },
+      {
+        brand: '에스쁘아 (Espoir)',
+        name: '브론즈 페인팅 워터프루프 젤 라이너',
+        shade: '브룸 스트리트 (Broom Street)',
+        price: '18,000원',
+        type: 'eyeliner',
+        description: '낙엽빛 카퍼 브론즈 미세 금펄이 들어있어 매끄럽고 포근하게 빛나는 가을 전용 드로잉 라이너입니다.'
       }
     ],
     luxury: [
@@ -393,6 +601,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '44,000원',
         type: 'eyeshadow',
         description: '순도 높은 로스트 토스트 베이지와 차분하고 묵직한 가을 카멜 브라운 무카페인 무광 음영 정석입니다.'
+      },
+      {
+        brand: '샤넬 (Chanel Beauty)',
+        name: '느와르 알뤼르 워터프루프 컬링 마스카라',
+        shade: '10 느와르 (Noir)',
+        price: '59,000원',
+        type: 'mascara',
+        description: '대지의 온기를 우아하게 가두는 다층적 골든 블랙 속눈썹 연출력의 럭셔리 마커입니다.'
+      },
+      {
+        brand: '나스 (NARS)',
+        name: '무드 콜 펜슬 라이너 익스트림',
+        shade: '비아 아피아 (Via Appia)',
+        price: '34,000원',
+        type: 'eyeliner',
+        description: '소중하고 고급스러운 가을 웜의 고풍스러운 마감용으로 정교히 녹아드는 코코아 프레소 펄 라이너입니다.'
       }
     ]
   },
@@ -421,6 +645,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '34,000원',
         type: 'eyeshadow',
         description: '깊고 무거운 딥 가을 음영을 연출하기 위한 에스프레소 베이지, 브론즈 코코아 포멀 팔레트입니다.'
+      },
+      {
+        brand: '클리오 (CLIO)',
+        name: '킬래쉬 워터프루프 볼륨앤컬',
+        shade: '03 매끈 볼륨 블랙 (Volume Black)',
+        price: '18,000원',
+        type: 'mascara',
+        description: '속눈썹 한 가닥도 빠짐없이 짙고 무거운 어두운 초콜릿 블랙 음영을 선사하는 딥 마스카라입니다.'
+      },
+      {
+        brand: '릴리바이레드 (Lilybyred)',
+        name: '나인투나인 서바이벌 슬림 젤 라이너',
+        shade: '03 월넛 브라운 (Walnut Brown)',
+        price: '9,000원',
+        type: 'eyeliner',
+        description: '딥 가을 웜의 단단한 피부톤 위에 이질감 없이 단숨에 우디하게 고정되는 깊은 딥 브라운 젤라이너입니다.'
       }
     ],
     luxury: [
@@ -447,6 +687,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '58,000원',
         type: 'eyeshadow',
         description: '차분하게 타오르는 가을 호박 엠버와 딥 마호가니를 고밀도로 응축하여 입체 윤곽을 강화합니다.'
+      },
+      {
+        brand: '톰포드 (Tom Ford)',
+        name: '울트라 실키 익스트림 볼륨 마스카라',
+        shade: '01 인텐스 블랙 (Intense Black)',
+        price: '75,000원',
+        type: 'mascara',
+        description: '가장 화려하면서도 깊고 밀도 있는 어두운 눈매를 박제하여 깊은 가을 딥 페이스를 극대화하는 명품 볼류마이저입니다.'
+      },
+      {
+        brand: '샤넬 (Chanel)',
+        name: '스틸로 이으 카본 워터프루프 라이너',
+        shade: '88 에스프레소 느와르 (Espresso)',
+        price: '44,000원',
+        type: 'eyeliner',
+        description: '고급스러운 매트 에스프레소와 칠흑 카본이 오묘히 대비 정돈되는 극비 명품 젤 펜슬입니다.'
       }
     ]
   },
@@ -475,6 +731,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '34,000원',
         type: 'eyeshadow',
         description: '진저 토스트 무광 음영과 영롱하고 청초하게 정렬된 금빛 대지 햇살 펄들의 배합입니다.'
+      },
+      {
+        brand: '투쿨포스쿨 (Too Cool For School)',
+        name: '미야자키 브라운 래쉬 픽서 마스카라',
+        shade: '02 카카오 브라운 (Kakao)',
+        price: '16,000원',
+        type: 'mascara',
+        description: '가을의 깊은 오두막 감성을 표현하기 위해 부드러운 카카오 에센셜 오일로 코팅되는 브라운 마스카라입니다.'
+      },
+      {
+        brand: '메리몽드 (Merrymonde)',
+        name: '슈퍼트임 무드 워터프루프 라이너',
+        shade: '02 캐롯 코랄 브라운 (Carrot)',
+        price: '13,000원',
+        type: 'eyeliner',
+        description: '오렌지 단풍빛과 당근색 베이지가 감돌아 가을 트루 웜만의 화사한 밑트임을 완성하는 여린 펜라이너입니다.'
       }
     ],
     luxury: [
@@ -488,7 +760,7 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
       },
       {
         brand: '로라메르시에 (Laura Mercier)',
-        name: '부와 드 로즈 치크 세컨드스킨',
+        name: '부와 디 로즈 치크 세컨드스킨',
         shade: '진저 (Ginger)',
         price: '46,000원',
         type: 'blush',
@@ -501,6 +773,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '94,000원',
         type: 'eyeshadow',
         description: '조용한 우아함 속에서 가을 석양 노을빛 레드 브라운과 골드 쉬머를 다층적으로 빌딩해줍니다.'
+      },
+      {
+        brand: '디올 (Dior)',
+        name: '디올쇼 아이코닉 골든브라운 마스카라',
+        shade: '694 브라운 (Brown)',
+        price: '51,000원',
+        type: 'mascara',
+        description: '풍요로운 가을 영양 성분이 가득 담겨, 한 올씩 우아한 초콜릿빛 광선을 빚어내는 무자극 럭셔리 마스카라입니다.'
+      },
+      {
+        brand: '에스티로더 (Estee Lauder)',
+        name: '더블웨어 인피니트 롱웨어 라이너',
+        shade: '02 에스프레소 (Espresso)',
+        price: '42,000원',
+        type: 'eyeliner',
+        description: '아침부터 밤까지 가을 웜 특유의 그윽한 황금빛 단색 눈매를 한 치의 번짐 없이 완벽 방어하는 클래식 라이너입니다.'
       }
     ]
   },
@@ -529,6 +817,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '23,000원',
         type: 'eyeshadow',
         description: '아이시 화이트 베일과 또렷하고 영롱한 다크 그레이, 실버 글리터의 절대 대비를 품은 섀도우입니다.'
+      },
+      {
+        brand: '에뛰드 (Etude)',
+        name: '컬 픽스 익스트림 마스카라',
+        shade: '01 오리지널 블랙 (Original Black)',
+        price: '15,000원',
+        type: 'mascara',
+        description: '눈동자를 보석처럼 부각하고, 겨울 브라이트의 맑디 맑은 피부 대조를 칠흑 속눈썹으로 강조해 마감합니다.'
+      },
+      {
+        brand: '프로에잇청담 (Pro 8 Cheongdam)',
+        name: '리퀴드 디파인 아쿠아 라이너',
+        shade: '01 딥 블랙 (Deep Black)',
+        price: '23,000원',
+        type: 'eyeliner',
+        description: '단 한 줄만으로 극명의 서늘한 카리스마와 윤기 감도는 쿨 워터 레이어 눈빛을 세팅해 주는 전문가용 리퀴드입니다.'
       }
     ],
     luxury: [
@@ -555,6 +859,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '98,000원',
         type: 'eyeshadow',
         description: '메탈릭한 실버 그레이, 차가운 자두 플럼, 아이시 오팔 글리터가 매치되어 화려하고 도회적인 매력을 선사합니다.'
+      },
+      {
+        brand: '디올 (Dior Beauty)',
+        name: '디올쇼 래쉬 오버볼륨 맥시마이저',
+        shade: '090 리치 블랙 (Rich Black)',
+        price: '51,000원',
+        type: 'mascara',
+        description: '겨울 쿨의 서늘하고 쨍한 블루 메이크업 위에 수분 정합 촉촉한 장막을 씌워줄 딥 블랙 카리스마 마스카라입니다.'
+      },
+      {
+        brand: '샤넬 (Chanel)',
+        name: '스틸로 이으 워터프루프 럭셔리',
+        shade: '10 에벤 블랙 (Ebene)',
+        price: '44,000원',
+        type: 'eyeliner',
+        description: '고고한 겨울빛 도회적 귀족 윤곽에 완벽 성형 효과를 주는 명품 시그니처 칠흑 리퀴드 펜슬입니다.'
       }
     ]
   },
@@ -583,6 +903,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '34,000원',
         type: 'eyeshadow',
         description: '딥 모브 타로 퍼플 라벤더 빛과 다크 그레이 브라운 음영이 결합된 시크하고 어두운 쿨톤 전용 팔레트입니다.'
+      },
+      {
+        brand: '롬앤 (rom&nd)',
+        name: '한올 볼륨앤컬 블랙 마스카라',
+        shade: 'L01 블랙 (Black)',
+        price: '13,000원',
+        type: 'mascara',
+        description: '심해의 어둠처럼 깊이감을 극대화해 주는 뭉근하고 또렷이 차오르는 딥 블랙 볼륨 마스카라입니다.'
+      },
+      {
+        brand: '클리오 (CLIO)',
+        name: '샤프 쏘 심플 워터프루프 젤 라이너',
+        shade: '01 블랙 (Black)',
+        price: '10,000원',
+        type: 'eyeliner',
+        description: '버건디 모브 또는 다크 화장 위를 조각하듯 스치며 겨울 딥의 눈꼬리를 빈틈없이 메꾸는 무광 블랙 젤입니다.'
       }
     ],
     luxury: [
@@ -609,6 +945,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '89,000원',
         type: 'eyeshadow',
         description: '시크함의 정점인 쿨한 다크 코코아 회그레이 브라운과 메탈릭 실버 글레이즈 섀도우입니다.'
+      },
+      {
+        brand: '입생로랑 (YSL Beauty)',
+        name: '마스카라 더 쇼크 익스트림 래쉬',
+        shade: '01 아스팔트 블랙 (Asphalt Black)',
+        price: '47,000원',
+        type: 'mascara',
+        description: '단단하고 엄숙히 차가운 아우라를 살려 단독 가시 속속 라인을 굳게 세워 주는 럭셔리 기어 마스카라입니다.'
+      },
+      {
+        brand: '톰포드 (Tom Ford)',
+        name: '아이 라이너 필러 엑스퍼트 붓펜',
+        shade: '01 도미넌트 느와르 (Dominant Tokyo)',
+        price: '82,000원',
+        type: 'eyeliner',
+        description: '완벽하게 서늘히 마감하며 영점을 맞추어 타격하는 명품 리퀴드 펜 포뮬러입니다.'
       }
     ]
   },
@@ -633,10 +985,26 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
       {
         brand: '홀리카홀리카',
         name: '피스 매칭 섀도우 4구 키트',
-        shade: '05 루비 벨벳 (Ruby Velvet)',
+        shade: '05 루비 Velvet (Ruby Velvet)',
         price: '16,000원',
         type: 'eyeshadow',
         description: '차가운 안갯빛 화이트 핑크 베이스와 깊은 타로 퍼플 마젠타를 품은 4구 슬림 섀도우입니다.'
+      },
+      {
+        brand: '키스미 (Kissme)',
+        name: '히로인 메이크 롱앤컬 이지 익스트림',
+        shade: '01 블랙 (Black)',
+        price: '18,500원',
+        type: 'mascara',
+        description: '눈보라가 몰아쳐도 끄떡없이 쿨 메이크업의 블랙 정밀도를 유지시켜 주는 전설의 프루프 마스카라입니다.'
+      },
+      {
+        brand: '클리오 (CLIO)',
+        name: '수퍼프루프 롱웨어 브러쉬 펜 라이너',
+        shade: '01 킬 블랙 (Kill Black)',
+        price: '18,000원',
+        type: 'eyeliner',
+        description: '단 한 치의 번짐 오차도 용납하지 않는 겨울 트루 쿨톤 정합 사슬 전용 고유 펜라이너입니다.'
       }
     ],
     luxury: [
@@ -663,6 +1031,22 @@ export const cosmeticRecommendations: Record<string, SeasonalRecommendations> = 
         price: '98,000원',
         type: 'eyeshadow',
         description: '한 치의 타협도 없는 아이시 스틸 그레이, 칠흑 차콜 블랙과 다이아몬드 영롱한 실버 펄의 향연입니다.'
+      },
+      {
+        brand: '샤넬 (Chanel Beauty)',
+        name: '이니미터블 익스트림 하이 앤 컬',
+        shade: '10 퓨어 블랙 (Pure Black)',
+        price: '49,000원',
+        type: 'mascara',
+        description: '매끄럽고 기품 흘러넘쳐, 도도하고 시크무쌍한 겨울 정석 실크 속눈썹을 코팅 마감해 주는 명품 장비입니다.'
+      },
+      {
+        brand: '디올 (Dior Beauty)',
+        name: '디올쇼 온스테이지 아쿠아 매트 라이너',
+        shade: '090 매트 블랙 (Matte Black)',
+        price: '45,000원',
+        type: 'eyeliner',
+        description: '겨족적이고 차갑고 서늘한 눈빛의 실루엣을 조각하는 무반사 스무스 카본 리퀴드 라이너입니다.'
       }
     ]
   }

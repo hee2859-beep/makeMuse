@@ -16,7 +16,7 @@ import {
   drawPresetFaceModel 
 } from "../lib/analyzer";
 import { calculatePrepScore } from "../lib/progress";
-import { Camera, RefreshCw, Sparkles, Upload, HelpCircle, Droplet } from "lucide-react";
+import { Camera, RefreshCw, Sparkles, Upload, HelpCircle, Droplet, HeartPulse } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface Props {
@@ -55,6 +55,8 @@ export default function BareFaceAnalyzer({
 
   const [activeCompareMode, setActiveCompareMode] = useState<'scan' | 'before' | 'after' | 'split'>('scan');
   const [splitPercent, setSplitPercent] = useState<number>(50);
+  const [playgroundMode, setPlaygroundMode] = useState<'simulator' | 'trouble'>('simulator');
+  const [troubleMarkType, setTroubleMarkType] = useState<'inflammatory' | 'moderate' | 'mild'>('inflammatory');
 
   const uploadedImageRef = useRef<HTMLImageElement | null>(null);
   const uploadedAfterImageRef = useRef<HTMLImageElement | null>(null);
@@ -75,7 +77,7 @@ export default function BareFaceAnalyzer({
   // Redraw preset face or video frame onto canvas
   useEffect(() => {
     redrawCanvas();
-  }, [activePreset, markers, activeCompareMode, splitPercent, uploadedImageSrc, afterImageSrc]);
+  }, [activePreset, markers, activeCompareMode, splitPercent, uploadedImageSrc, afterImageSrc, analysisData, playgroundMode, troubleMarkType]);
 
   // Handle live camera stream mapping
   useEffect(() => {
@@ -128,7 +130,7 @@ export default function BareFaceAnalyzer({
   // Redraw preset face or video frame onto canvas
   useEffect(() => {
     redrawCanvas();
-  }, [activePreset, markers, drawArActive, activeTutorial, makeupParams, uploadedImageSrc, afterImageSrc, activeCompareMode, splitPercent]);
+  }, [activePreset, markers, drawArActive, activeTutorial, makeupParams, uploadedImageSrc, afterImageSrc, activeCompareMode, splitPercent, analysisData, playgroundMode, troubleMarkType]);
 
   const drawArGuidelines = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
     if (drawArActive && activeTutorial && activeTutorial.arGuideLines) {
@@ -353,6 +355,105 @@ export default function BareFaceAnalyzer({
 
       // Draw training guidelines (AR overlay)
       drawArGuidelines(ctx, canvas);
+
+      // Draw detected trouble/pimple spot crosshairs if matching active mode is scan
+      if (analysisData.troubleSpots) {
+        analysisData.troubleSpots.forEach((s) => {
+          const sx = (s.xPercent / 100) * w;
+          const sy = (s.yPercent / 100) * h;
+          const color = s.severity === 'inflammatory' ? '#EF4444' : s.severity === 'moderate' ? '#F59E0B' : '#10B981';
+          
+          // 1. Draw outer dashed radar ring
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([3, 2]);
+          ctx.beginPath();
+          ctx.arc(sx, sy, 11, 0, 2 * Math.PI);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // 2. Draw crosshairs tick lines
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          // vertical ticks
+          ctx.moveTo(sx, sy - 15); ctx.lineTo(sx, sy - 9);
+          ctx.moveTo(sx, sy + 9); ctx.lineTo(sx, sy + 15);
+          // horizontal ticks
+          ctx.moveTo(sx - 15, sy); ctx.lineTo(sx - 9, sy);
+          ctx.moveTo(sx + 9, sy); ctx.lineTo(sx + 15, sy);
+          ctx.stroke();
+
+          // 3. Draw solid inner core
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(sx, sy, 3, 0, 2 * Math.PI);
+          ctx.fill();
+
+          // 4. Contrast white border
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.arc(sx, sy, 3, 0, 2 * Math.PI);
+          ctx.stroke();
+
+          // 5. Draw text tag with shadow
+          ctx.font = 'bold 8px system-ui, sans-serif';
+          ctx.fillStyle = '#FFFFFF';
+          ctx.shadowBlur = 3;
+          ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          ctx.textAlign = 'left';
+          ctx.fillText(s.severity === 'inflammatory' ? '🔴 트러블' : s.severity === 'moderate' ? '🟡 요철' : '🟢 좁쌀', sx + 6, sy + 13);
+          ctx.shadowBlur = 0; // reset shadow Immediately
+        });
+      }
+    }
+
+    // Also draw trouble spots on top of other modes if specifically inside the trouble care desk
+    if (playgroundMode === 'trouble' && activeCompareMode !== 'scan' && analysisData.troubleSpots) {
+      analysisData.troubleSpots.forEach((s) => {
+        const sx = (s.xPercent / 100) * w;
+        const sy = (s.yPercent / 100) * h;
+        
+        // If in split mode and the spot is on the right side, but we only want to show on left before side under split, we can restrict or draw anyway. Drawing anyway is great.
+        const color = s.severity === 'inflammatory' ? '#EF4444' : s.severity === 'moderate' ? '#F59E0B' : '#10B981';
+        
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([3, 2]);
+        ctx.beginPath();
+        ctx.arc(sx, sy, 11, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy - 15); ctx.lineTo(sx, sy - 9);
+        ctx.moveTo(sx, sy + 9); ctx.lineTo(sx, sy + 15);
+        ctx.moveTo(sx - 15, sy); ctx.lineTo(sx - 9, sy);
+        ctx.moveTo(sx + 9, sy); ctx.lineTo(sx + 15, sy);
+        ctx.stroke();
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 3, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 3, 0, 2 * Math.PI);
+        ctx.stroke();
+
+        ctx.font = 'bold 8px system-ui, sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowBlur = 3;
+        ctx.shadowColor = 'rgba(0,0,0,0.85)';
+        ctx.textAlign = 'left';
+        ctx.fillText(s.severity === 'inflammatory' ? '🔴 트러블' : s.severity === 'moderate' ? '🟡 요철' : '🟢 좁쌀', sx + 6, sy + 13);
+        ctx.shadowBlur = 0;
+      });
     }
   };
 
@@ -377,8 +478,8 @@ export default function BareFaceAnalyzer({
 
     // Create an offscreen canvas to capture a clean, raw frame without the overlaid grid/marker dots!
     const offscreen = document.createElement("canvas");
-    offscreen.width = 400;
-    offscreen.height = 400;
+    offscreen.width = 800;
+    offscreen.height = 800;
     const oCtx = offscreen.getContext("2d");
     if (!oCtx) {
       setIsAnalyzing(false);
@@ -500,6 +601,71 @@ export default function BareFaceAnalyzer({
       }
     }
 
+    // Interactive custom troubleshooting manually
+    if (playgroundMode === "trouble") {
+      const spots = [...(analysisData.troubleSpots || [])];
+      let matchedIndex = -1;
+      let matchedDist = 5.5; // tolerance distance %
+      
+      spots.forEach((spot, idx) => {
+        const dist = Math.sqrt(Math.pow(spot.xPercent - clickX, 2) + Math.pow(spot.yPercent - clickY, 2));
+        if (dist < matchedDist) {
+          matchedDist = dist;
+          matchedIndex = idx;
+        }
+      });
+
+      if (matchedIndex > -1) {
+        // Remove the existing pinpoint
+        spots.splice(matchedIndex, 1);
+      } else {
+        // Add new trouble pinpoint at exact coordinates
+        const spotLabel = troubleMarkType === 'inflammatory' ? '직접표시 염증성 트러블' :
+                          troubleMarkType === 'moderate' ? '직접표시 구진성 요철' : '직접표시 미세 좁쌀';
+        spots.push({
+          xPercent: Math.round(clickX),
+          yPercent: Math.round(clickY),
+          severity: troubleMarkType,
+          label: `${spotLabel} (${spots.length + 1})`
+        });
+      }
+
+      const troubleCount = spots.length;
+      let advice = "";
+      if (troubleCount > 0) {
+        const hasInflammatory = spots.some(s => s.severity === 'inflammatory');
+        const hasModerate = spots.some(s => s.severity === 'moderate');
+        
+        advice = `## 🚨 트러블 케어 데스크: 뾰루지 감지 리포트\n\n`;
+        advice += `가장 최근에 업데이트하신 피부 스캔 또는 직접 입력하신 기록 결과 **총 ${troubleCount}개의 트러블/요철 구역**을 분석하고 조치하고 있습니다.\n\n`;
+        
+        if (hasInflammatory) {
+          advice += `### 🔴 **【화농성/염증성 붉은 뾰루지 케어】**\n`;
+          advice += `- **진단 피드백:** 피지 장벽 안에 심도 있는 열 반응이 일어나는 염증성 구역입니다. 억지로 자극하여 긁으면 박테리아 분열로 상처 흔적을 남길 수 있습니다.\n`;
+          advice += `- **케어 권장 가이드:** 자극적 압출을 절대 금지하며 시카 겔 또는 어성초 팩을 가볍게 올려 진정한 다음 통기성이 투명한 스팟 하이드로콜로이드 패치로 덮으십시오.\n\n`;
+        } else if (hasModerate) {
+          advice += `### 🟡 **【구진성 붉은 요철 개별 케어】**\n`;
+          advice += `- **진단 피드백:** 붉고 오돌토돌 부풀기 시작하는 요철 영역입니다.\n`;
+          advice += `- **케어 권장 가이드:** 유연한 각질 정돈 및 살리실산(BHA) 토너 패드를 밀착시켜 유분을 완화하고 티트리 앰플 진정 가이드를 적용하십시오.\n\n`;
+        } else {
+          advice += `### 🟢 **【미세 좁쌀 수분 충전 케어】**\n`;
+          advice += `- **진단 피드백:** 건조하여 각질로 입구가 막힌 탈수성 좁쌀 요철구역입니다.\n`;
+          advice += `- **케어 권장 가이드:** 장벽을 무너뜨리는 오일 성분을 피해 논코메도제닉 가벼운 히알루론산 젤 팩을 여러 겹 발라 수분을 완화하십시오.\n\n`;
+        }
+      } else {
+        advice = `## 🎉 맑고 청정한 쌩얼 피부 유지 중\n\n`;
+        advice += `- 검출되거나 마킹된 트러블 요철이 없습니다. 건강한 보습 장벽을 보호하기 위해 수분 에코막 유지에 힘써 주세요.`;
+      }
+
+      setAnalysisData(prev => ({
+        ...prev,
+        troubleCount,
+        troubleSpots: spots,
+        troubleAdvice: advice
+      }));
+      return;
+    }
+
     if (activeCompareMode !== "scan") {
       // Disable marker dragging when focusing purely on the visual comparison
       return;
@@ -602,11 +768,11 @@ export default function BareFaceAnalyzer({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div className="flex flex-col gap-6 items-center w-full">
       {/* Target Face Scanner Frame */}
-      <div className="lg:col-span-6 flex flex-col items-center">
+      <div className="w-full flex flex-col items-center">
         <div 
-          className={`relative border-8 border-white bg-brand-deep rounded-[40px] overflow-hidden shadow-xl p-2.5 transition-all duration-300 w-full max-w-[420px] aspect-square flex flex-col justify-center items-center`}
+          className={`relative border-8 border-white bg-brand-deep rounded-[40px] overflow-hidden shadow-xl p-2.5 transition-all duration-300 w-full max-w-[480px] aspect-square flex flex-col justify-center items-center`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -615,8 +781,8 @@ export default function BareFaceAnalyzer({
           {/* Main Processing Canvas */}
           <canvas
             ref={canvasRef}
-            width={400}
-            height={400}
+            width={540}
+            height={540}
             className="w-full h-full rounded-[30px] cursor-crosshair bg-brand-deep transition-transform duration-200"
             onMouseDown={handleCanvasMouseDown}
             onMouseMove={handleCanvasMouseMove}
@@ -629,8 +795,8 @@ export default function BareFaceAnalyzer({
             <video
               ref={videoRef}
               className="absolute pointer-events-none opacity-0"
-              width={400}
-              height={400}
+              width={540}
+              height={540}
               playsInline
               muted
             />
@@ -684,7 +850,7 @@ export default function BareFaceAnalyzer({
         </div>
 
         {/* Input Controls Panel */}
-        <div className="flex flex-wrap gap-2.5 justify-center mt-4.5 w-full max-w-[420px]">
+        <div className="flex flex-wrap gap-2.5 justify-center mt-4.5 w-full max-w-[480px]">
           <button
             onClick={() => setIsLiveCamera(!isLiveCamera)}
             className={`flex items-center gap-1.5 px-4.5 py-2.5 rounded-2xl text-xs font-semibold cursor-pointer transition-all ${isLiveCamera ? "bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold" : "bg-white hover:bg-[#F3F6F7] text-brand-dark/90 border border-brand-border shadow-sm"}`}
@@ -743,7 +909,7 @@ export default function BareFaceAnalyzer({
         </div>
 
         {/* Comparison Control Desk Overlay */}
-        <div className="w-full max-w-[420px] bg-[#F4F9FA] border border-[#D5E6E8] rounded-[24px] p-4 mt-4 space-y-3 shadow-sm">
+        <div className="w-full max-w-[480px] bg-[#F4F9FA] border border-[#D5E6E8] rounded-[24px] p-4 mt-4 space-y-3 shadow-sm">
           <div className="flex justify-between items-center">
             <p className="text-[10px] font-mono font-bold text-brand-primary uppercase tracking-wider">Before / After Compare Deck</p>
             {activeCompareMode === 'after' && !afterImageSrc && (
@@ -821,14 +987,14 @@ export default function BareFaceAnalyzer({
         </div>
 
         {cameraError && (
-          <p className="text-brand-primary/95 text-[10px] sm:text-xs text-center mt-3 max-w-[420px] leading-relaxed font-mono">
+          <p className="text-brand-primary/95 text-[10px] sm:text-xs text-center mt-3 max-w-[480px] leading-relaxed font-mono">
             ⚠️ {cameraError}
           </p>
         )}
       </div>
 
       {/* Numerical Diagnostics Sheet */}
-      <div className="lg:col-span-6 bg-white border border-[#E0EDEE] p-6 rounded-[28px] shadow-sm">
+      <div className="w-full max-w-[480px] bg-white border border-[#E0EDEE] p-6 rounded-[28px] shadow-sm">
         <div className="flex justify-between items-center mb-5">
           <div>
             <span className="text-[10px] font-mono tracking-widest text-[#007D85] opacity-60 uppercase font-bold">Interactive Playground</span>
@@ -848,29 +1014,65 @@ export default function BareFaceAnalyzer({
           </button>
         </div>
 
-        {/* Dynamic Preset Switcher */}
-        <div className="mb-6">
-          <label className="text-xs text-brand-dark/70 block mb-2 font-semibold">체험 시뮬레이션 모델 선택:</label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: 'neutral-sand', name: '내추럴 샌드', desc: '표준 톤 & 미세 주름' },
-              { id: 'warm-coral', name: '플러시 코랄', desc: '홍조 다수 & 결 들뜸' },
-              { id: 'deep-abyss', name: '딥 아비스', desc: '어두운 톤 & 매끄러움' }
-            ].map(item => (
-              <button
-                key={item.id}
-                onClick={() => handlePresetChange(item.id as any)}
-                className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${activePreset === item.id && !uploadedImageSrc ? "bg-brand-primary/5 border-brand-primary text-brand-primary" : "bg-[#F8FAFB] border-[#E0EDEE] hover:border-brand-primary/50 text-brand-dark/80"}`}
-              >
-                <p className="text-xs font-bold leading-tight">{item.name}</p>
-                <p className="text-[9px] text-brand-dark/50 mt-1 whitespace-nowrap overflow-hidden text-ellipsis leading-none">{item.desc}</p>
-              </button>
-            ))}
-          </div>
+        {/* Playback Mode Separated Navigation Tabs */}
+        <div className="grid grid-cols-2 p-1 bg-[#F1F6F7] rounded-2xl border border-brand-border/40 mb-6" id="playground_tab_navigator">
+          <button
+            type="button"
+            onClick={() => setPlaygroundMode('simulator')}
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              playgroundMode === 'simulator'
+                ? "bg-[#007D85] text-white shadow-sm"
+                : "text-brand-dark/60 hover:text-[#007D85] font-semibold"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>피부 계측 & 시뮬레이터</span>
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => setPlaygroundMode('trouble')}
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
+              playgroundMode === 'trouble'
+                ? "bg-rose-600 text-white shadow-sm"
+                : "text-brand-dark/60 hover:text-rose-600 font-semibold"
+            }`}
+          >
+            <HeartPulse className={`w-3.5 h-3.5 ${(analysisData.troubleCount || 0) > 0 ? 'animate-pulse text-current' : ''}`} />
+            <span>트러블 케어 데스크</span>
+            {(analysisData.troubleCount || 0) > 0 && (
+              <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-mono font-extrabold ${playgroundMode === 'trouble' ? 'bg-white text-rose-600' : 'bg-rose-500 text-white animate-bounce'}`}>
+                {analysisData.troubleCount}
+              </span>
+            )}
+          </button>
         </div>
 
+        {playgroundMode === 'simulator' && (
+          <div className="mb-6">
+            <label className="text-xs text-brand-dark/70 block mb-2 font-semibold">체험 시뮬레이션 모델 선택:</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: 'neutral-sand', name: '내추럴 샌드', desc: '표준 톤 & 미세 주름' },
+                { id: 'warm-coral', name: '플러시 코랄', desc: '홍조 다수 & 결 들뜸' },
+                { id: 'deep-abyss', name: '딥 아비스', desc: '어두운 톤 & 매끄러움' }
+              ].map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => handlePresetChange(item.id as any)}
+                  className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${activePreset === item.id && !uploadedImageSrc ? "bg-brand-primary/5 border-brand-primary text-brand-primary" : "bg-[#F8FAFB] border-[#E0EDEE] hover:border-brand-primary/50 text-brand-dark/80"}`}
+                >
+                  <p className="text-xs font-bold leading-tight">{item.name}</p>
+                  <p className="text-[9px] text-brand-dark/50 mt-1 whitespace-nowrap overflow-hidden text-ellipsis leading-none">{item.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Sea Wave gauge and Sub stats */}
-        <div className="space-y-5">
+        {playgroundMode === 'simulator' && (
+          <div className="space-y-5">
           
           {/* Main Wave Moisture Gauge */}
           <div className="p-5 rounded-3xl bg-[#E0EFF2] border-2 border-white shadow-inner relative overflow-hidden" id="wave_moisture_gauge">
@@ -943,8 +1145,170 @@ export default function BareFaceAnalyzer({
               </div>
             </div>
           </div>
-
         </div>
+      )}
+
+        {/* Interactive Trouble Care Desk (Pimple Relief Board) */}
+        {playgroundMode === 'trouble' && (
+          <div className="space-y-4 animate-fadeIn">
+            {/* Mini Target Profile Card */}
+            <div className="p-3.5 bg-brand-light border border-[#E0EDEE] rounded-2xl flex items-center justify-between shadow-xs">
+              <div>
+                <span className="text-[9px] font-mono font-bold text-[#007D85] uppercase tracking-wider block">분석 대상 피부 프로필</span>
+                <p className="text-[11px] font-extrabold text-brand-dark mt-0.5 leading-tight">{analysisData.skinTone} ({analysisData.personalColor || 'Spring Warm'})</p>
+              </div>
+              <div className="text-right">
+                <span className="text-[9px] font-mono font-bold text-[#007D85] uppercase tracking-wider block">BFP 점수</span>
+                <p className="text-xs font-mono font-bold text-[#007D85]">{prepScore}점 / 100</p>
+              </div>
+            </div>
+
+            <div className="mt-2 space-y-4 select-none" id="trouble_care_desk">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold text-brand-dark flex items-center gap-1.5 font-sans">
+                <span className="p-1 rounded-lg bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center shadow-xs">
+                  <HeartPulse className="w-3.5 h-3.5" />
+                </span>
+                <span>트러블 케어 데스크 <span className="text-[10px] text-[#007D85]/60 font-mono ml-1 font-normal">Pimple Relief Board</span></span>
+              </h4>
+              <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border transition-all ${
+                (analysisData.troubleCount || 0) > 0 
+                  ? "bg-rose-50 text-rose-600 border-rose-100 animate-pulse" 
+                  : "bg-emerald-50 text-emerald-600 border-emerald-100"
+              }`}>
+                {(analysisData.troubleCount || 0) > 0 ? `🚨 위험 요철 ${analysisData.troubleCount}개 감지구역` : "🎉 트러블 안전 지대"}
+              </span>
+            </div>
+
+            {/* Custom Trouble/Irregularity Spot Pinpointing Controller */}
+            <div className="bg-rose-50/40 border border-rose-100/70 p-4 rounded-3xl space-y-3 shadow-inner">
+              <p className="text-[10.5px] font-bold text-rose-950 flex items-center gap-1.5 leading-none">
+                <span className="inline-block w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                📍 사진에서 트러블과 요철의 위치 직접 표시하기
+              </p>
+              <p className="text-[11px] text-slate-700 leading-relaxed font-sans">
+                아래에서 표시할 종류를 선택한 다음, 상단 <strong>피부 소스 프레임(캔버스)</strong>의 원하는 위치를 직접 클릭/터치하면 정밀한 요철/트러블 점이 생성됩니다. 생성한 지점을 다시 클릭하시면 깔끔하게 삭제됩니다.
+              </p>
+              
+              <div className="grid grid-cols-3 gap-2 bg-white/70 p-1.5 rounded-2xl border border-rose-200/40">
+                {[
+                  { id: 'inflammatory', label: '🔴 트러블', color: 'text-rose-600 border-rose-200 bg-rose-50/80 shadow-xs' },
+                  { id: 'moderate', label: '🟡 요철', color: 'text-amber-600 border-amber-200 bg-amber-50/80 shadow-xs' },
+                  { id: 'mild', label: '🟢 좁쌀', color: 'text-emerald-700 border-emerald-200 bg-emerald-50/80 shadow-xs' }
+                ].map(tool => (
+                  <button
+                    type="button"
+                    key={tool.id}
+                    onClick={() => setTroubleMarkType(tool.id as any)}
+                    className={`py-2 px-1 rounded-xl text-[10.5px] font-extrabold border transition-all cursor-pointer text-center ${
+                      troubleMarkType === tool.id 
+                        ? `${tool.color} border-current scale-102` 
+                        : "text-slate-500 border-transparent hover:bg-slate-50"
+                    }`}
+                  >
+                    {tool.id === 'inflammatory' ? '🔴 트러블' : tool.id === 'moderate' ? '🟡 요철' : '🟢 좁쌀'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {(analysisData.troubleCount || 0) > 0 ? (
+              <div className="space-y-3">
+                {/* List of detected trouble spots */}
+                <div className="grid grid-cols-2 gap-2">
+                  {analysisData.troubleSpots?.map((spot, idx) => {
+                    const colorClass = 
+                      spot.severity === 'inflammatory' ? "bg-rose-50 text-rose-800 border-rose-200" :
+                      spot.severity === 'moderate' ? "bg-amber-50 text-amber-800 border-amber-200" :
+                      "bg-emerald-50/70 text-emerald-800 border-emerald-200";
+                    return (
+                      <div 
+                        key={idx} 
+                        className={`p-2.5 rounded-xl border ${colorClass} flex flex-col justify-between transition-all hover:shadow-xs`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                          <span className="text-[10.5px] font-bold">{spot.label}</span>
+                        </div>
+                        <p className="text-[9px] font-mono opacity-70 mt-1 select-none">
+                          위치: 가로 {spot.xPercent}%, 세로 {spot.yPercent}%
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Detailed care prescription box */}
+                <div className="bg-[#FAFDFD] border border-[#E2F0F2] rounded-2xl p-4 space-y-3 shadow-inner">
+                  <div>
+                    <span className="text-[9px] font-mono font-bold text-brand-primary uppercase tracking-wide">Emergency Action</span>
+                    <p className="text-xs font-extrabold text-brand-dark mt-0.5">상태별 맞춤 홈케어 관리 요법</p>
+                  </div>
+                  
+                  {analysisData.troubleSpots?.some(s => s.severity === 'inflammatory') && (
+                    <div className="space-y-2">
+                      <div className="p-3 bg-red-50/70 border border-red-100/60 rounded-xl text-[10.5px] leading-relaxed text-slate-700">
+                        <span className="font-bold text-[11px] text-red-700 flex items-center gap-1 mb-1">
+                          🚫 [주의 사항] 절대 자가 압출 즉시 중지!
+                        </span>
+                        현재 붉게 팽창된 화농성 뾰루지가 관측됩니다. 억지로 자극하여 짤 경우 진피 레이어가 영구 결손되어 패임 흉터가 남습니다.
+                      </div>
+                      <div className="p-3 bg-brand-light border border-brand-border/40 rounded-xl text-[10.5px] leading-relaxed text-[#004D54]">
+                        <span className="font-bold text-[11px] text-brand-primary flex items-center gap-1 mb-1">
+                          🌿 [추천 허브 요법] 어성초 패치 습포 가이드
+                        </span>
+                        약모밀(어성초) 성분이나 시카 케어 젤을 화장솜에 묻혀 3분간 올려둔 후, 통기용 하이드로콜로이드 트러블 전용 패치로 덮어 공기 마찰을 차단하세요.
+                      </div>
+                    </div>
+                  )}
+
+                  {!analysisData.troubleSpots?.some(s => s.severity === 'inflammatory') && analysisData.troubleSpots?.some(s => s.severity === 'moderate') && (
+                    <div className="space-y-2">
+                      <div className="p-3 bg-amber-50/70 border border-amber-100/60 rounded-xl text-[10.5px] leading-relaxed text-slate-700">
+                        <span className="font-bold text-[11px] text-amber-700 flex items-center gap-1 mb-1">
+                          ⚠️ [주의 사항] 물리적 스크럽·각질 패드 사용 전면 중단
+                        </span>
+                        모공 마개가 단단히 부풀어 올라 붉어진 구진성 상태입니다. 각질 제거 패드로 과도하게 문지르면 염증 통로가 찢어져 악화됩니다.
+                      </div>
+                      <div className="p-3 bg-brand-light border border-brand-border/40 rounded-xl text-[10.5px] leading-relaxed text-[#004D54]">
+                        <span className="font-bold text-[11px] text-[#007D85] flex items-center gap-1 mb-1">
+                          💧 [추천 요법] BHA 마일드 세럼 & 티트리 리밸런싱
+                        </span>
+                        살리실산(BHA)이 든 액상 토너를 촉촉히 흡수시켜 피지 통로를 연 후, 소독 효능을 지닌 티트리 오일 한 방울을 앰플에 섞어 부드럽게 세딩하세요.
+                      </div>
+                    </div>
+                  )}
+
+                  {!analysisData.troubleSpots?.some(s => s.severity === 'inflammatory' || s.severity === 'moderate') && (
+                    <div className="space-y-2">
+                      <div className="p-3 bg-emerald-50/60 border border-emerald-100/60 rounded-xl text-[10.5px] leading-relaxed text-slate-700">
+                        <span className="font-bold text-[11px] text-emerald-700 flex items-center gap-1 mb-1">
+                          🚫 [주의 사항] 오일 가득 무거운 오클루시브 크림 제한
+                        </span>
+                        얼굴 건조로 모공 입구 각질이 말라붙어 피지가 갇힌 좁쌀 뾰루지 형태입니다. 실리콘이나 동물성 오일 크림은 모공을 추가로 폐쇄합니다.
+                      </div>
+                      <div className="p-3 bg-brand-light border border-brand-border/40 rounded-xl text-[10.5px] leading-relaxed text-[#004D54]">
+                        <span className="font-bold text-[11px] text-brand-primary flex items-center gap-1 mb-1">
+                          💦 [추천 요법] 논코메도제닉 수딩 젤 오버도즈
+                        </span>
+                        모공을 가두지 않는 알로에베라 혹은 저분자 히알루론산 수딩 젤을 가볍게 세 겹 얹어서 촉촉하게 각질층 탈락 주기를 가속하고 잠자리에 드세요!
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="p-5 rounded-2xl bg-[#F8FCFC] border border-[#E6EFF0] flex flex-col items-center justify-center text-center">
+                <span className="text-xl mb-1 select-none">🕊️</span>
+                <p className="text-xs font-bold text-brand-dark">깨끗하고 맑은 스킨 배리어</p>
+                <p className="text-[10px] text-brand-dark/50 mt-1 max-w-[280px] leading-relaxed">
+                  스캔된 쌩얼 이미지에서 염증성 뾰루지나 좁쌀 요철 돌기가 검출되지 않았습니다. 수분 파도 보습망만 잘 닫아주시면 건강한 투명 쌩얼이 지속됩니다!
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

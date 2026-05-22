@@ -19,6 +19,14 @@ export interface SkinData {
   personalColor: string;    // One of the 12 season types (e.g. Spring Warm Light)
   analyzedAt: string | null;
   profileId?: string;       // Associates with a specific user profile
+  troubleCount?: number;    // Detected pimples/acne count
+  troubleSpots?: {          // Detected coordinates and labels
+    xPercent: number;
+    yPercent: number;
+    severity: 'mild' | 'moderate' | 'inflammatory';
+    label: string;
+  }[];
+  troubleAdvice?: string;   // Structured homecare advice
 }
 
 export interface UserProfile {
