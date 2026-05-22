@@ -368,6 +368,55 @@ export default function BareFaceAnalyzer({
     setActivePreset(type);
   };
 
+  const captureWebcamPhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    
+    setIsAnalyzing(true);
+
+    // Create an offscreen canvas to capture a clean, raw frame without the overlaid grid/marker dots!
+    const offscreen = document.createElement("canvas");
+    offscreen.width = 400;
+    offscreen.height = 400;
+    const oCtx = offscreen.getContext("2d");
+    if (!oCtx) {
+      setIsAnalyzing(false);
+      return;
+    }
+    
+    try {
+      // Draw the raw webcam video frame onto the offscreen canvas
+      oCtx.drawImage(video, 0, 0, offscreen.width, offscreen.height);
+      const dataUrl = offscreen.toDataURL("image/jpeg", 0.95);
+      
+      const img = new Image();
+      img.onload = () => {
+        uploadedImageRef.current = img;
+        setUploadedImageSrc(dataUrl);
+        setUploadedFileName("웹캠 스냅샷");
+        setIsLiveCamera(false);
+        setActiveCompareMode('scan');
+        
+        // Calculate the biometric progress scores on the raw static frame
+        const results = analyzeBareFaceCanvas(offscreen, markers);
+        const score = calculatePrepScore(results);
+        
+        setAnalysisData(results);
+        setPrepScore(score);
+        setIsAnalyzing(false);
+
+        // Notify parent about state synchronization with full data
+        onAnalysisComplete(results, score, dataUrl, "웹캠 스냅샷");
+      };
+      img.src = dataUrl;
+    } catch (e) {
+      console.error("Failed to capture webcam snapshot:", e);
+      setCameraError("카메라 캡처에 오류가 발생했습니다. 카메라 권한과 보안 컨텍스트(HTTPS)를 확인하십시오.");
+      setIsAnalyzing(false);
+    }
+  };
+
   const triggerAnalyze = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -614,6 +663,24 @@ export default function BareFaceAnalyzer({
               </motion.div>
             )}
           </AnimatePresence>
+
+          {isLiveCamera && (
+            <div className="absolute bottom-6 left-0 right-0 z-10 flex flex-col items-center gap-1.5 px-4">
+              <button
+                type="button"
+                onClick={captureWebcamPhoto}
+                className="bg-brand-primary hover:bg-brand-primary/95 text-white font-bold text-xs px-6 py-3 rounded-full shadow-lg border-2 border-white hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer animate-bounce"
+                id="btn_capture_shutter"
+                style={{ animationDuration: '2s' }}
+              >
+                <Camera className="w-4 h-4 text-white" />
+                <span>📸 지금 찰칵! 촬영하기</span>
+              </button>
+              <span className="text-[10px] text-white/95 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-center font-medium shadow-md">
+                가이드라인에 눈, 코, 입을 대략 맞추고 촬영하세요!
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Input Controls Panel */}
@@ -626,6 +693,18 @@ export default function BareFaceAnalyzer({
             <Camera className="w-3.5 h-3.5" />
             {isLiveCamera ? "카메라 끄기" : "실시간 웹캠"}
           </button>
+
+          {isLiveCamera && (
+            <button
+              type="button"
+              onClick={captureWebcamPhoto}
+              className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-2xl text-xs bg-[#007D85] hover:bg-[#005B61] text-white border border-[#007D85] shadow-md transition-all cursor-pointer font-bold animate-pulse"
+              id="btn_webcam_capture_control"
+            >
+              <Camera className="w-3.5 h-3.5 text-white" />
+              <span>사진 촬영 (캡처)</span>
+            </button>
+          )}
 
           <button
             onClick={() => fileInputRef.current?.click()}

@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Functions
+    function isSignedIn() {
+      return request.auth != null && request.auth.uid != null && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation for Profile
+    function isValidProfile(data) {
+      return data.keys().hasAll(['id', 'userId', 'name', 'skinType', 'notes', 'avatarColor']) 
+        && data.keys().size() == 6
+        && data.id is string && data.id.size() <= 128
+        && data.userId is string && data.userId == request.auth.uid
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 64
+        && data.skinType is string && data.skinType in ['dry', 'oily', 'sensitive', 'normal']
+        && data.notes is string && data.notes.size() <= 500
+        && data.avatarColor is string && data.avatarColor.size() <= 64;
+    }
+
+    // Validation for History
+    function isValidHistory(data) {
+      return data.keys().hasAll([
+        'id', 'userId', 'profileId', 'textureScore', 'rednessScore', 
+        'moistureScore', 'skinTone', 'personalColor', 'prepScore', 
+        'analyzedAt', 'imageThumbnail', 'sourceName'
+      ])
+        && data.keys().size() == 12
+        && data.id is string && data.id.size() <= 128
+        && data.userId is string && data.userId == request.auth.uid
+        && data.profileId is string && data.profileId.size() <= 128
+        && data.textureScore is int && data.textureScore >= 0 && data.textureScore <= 100
+        && data.rednessScore is int && data.rednessScore >= 0 && data.rednessScore <= 100
+        && data.moistureScore is int && data.moistureScore >= 0 && data.moistureScore <= 100
+        && data.skinTone is string && data.skinTone.size() <= 128
+        && data.personalColor is string && data.personalColor.size() <= 128
+        && data.prepScore is int && data.prepScore >= 0 && data.prepScore <= 100
+        && data.analyzedAt is string && data.analyzedAt.size() <= 128
+        && data.imageThumbnail is string && data.imageThumbnail.size() <= 5000000
+        && data.sourceName is string && data.sourceName.size() <= 256;
+    }
+
+    // Profiles Collection
+    match /profiles/{profileId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isSignedIn() 
+        && isValidId(profileId) 
+        && isValidProfile(incoming());
+
+      allow update: if isSignedIn()
+        && isValidId(profileId)
+        && isValidProfile(incoming())
+        && incoming().userId == existing().userId
+        && incoming().id == existing().id
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['name', 'skinType', 'notes', 'avatarColor'])
+        );
+
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    // History Collection
+    match /history/{historyId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isSignedIn() 
+        && isValidId(historyId) 
+        && isValidHistory(incoming())
+        && exists(/databases/$(database)/documents/profiles/$(incoming().profileId))
+        && get(/databases/$(database)/documents/profiles/$(incoming().profileId)).data.userId == request.auth.uid;
+
+      allow update: if false; // History records are immutable and system-generated!
+
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+  }
+}

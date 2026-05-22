@@ -4,12 +4,12 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --color-brand-primary: #007D85;
+  --color-brand-primary: #006D75;
   --color-brand-secondary: #00CED1;
-  --color-brand-dark: #1A3A3A;
-  --color-brand-deep: #001A1C;
-  --color-brand-light: #F0F5F6;
-  --color-brand-border: #D0E0E2;
+  --color-brand-dark: #1F3336;
+  --color-brand-deep: #0D1C1E;
+  --color-brand-light: #F7F9FA;
+  --color-brand-border: #E5EFF1;
   --color-brand-card: #FFFFFF;
 }
 

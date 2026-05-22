@@ -1109,46 +1109,46 @@ export default function AdaptiveCalibrator({
       </div>
 
       {/* REAL-TIME GLOBAL USER DATA SAT-STREAM CONSOLE (실시간 글로벌 유저 진단 데이터 스트림) */}
-      <div className="bg-gradient-to-b from-[#0F1E22] to-[#162B30] text-[#DCEAEB] rounded-[24px] p-5 shadow-xl border border-[#27464D]/50 space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-[#24424A]/60 pb-4">
+      <div className="bg-[#FAFBFB] rounded-[28px] p-5.5 border border-brand-border/75 space-y-5 shadow-[0_12px_36px_rgba(0,109,117,0.02)] text-brand-dark">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-brand-border/40 pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-20"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <h5 className="text-[12px] font-mono tracking-widest text-[#00E5FF] font-black uppercase flex items-center gap-1.5">
-                <Globe className="w-4 h-4 text-[#00E5FF]" /> Marine Biometric Global Live-Pulse Map (실시간 글로벌 유저 진단 정보 스트림)
+              <h5 className="text-[11px] font-mono tracking-widest text-[#006E74] font-bold uppercase flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-[#006E74]" /> Marine Biometric Global Live-Pulse Map (실시간 유저 스트림)
               </h5>
             </div>
-            <p className="text-[11px] text-[#A6C5C9]">
-              전 세계 에코-테스터 및 기기 사용자들의 피부 상태 진단 이력이 실시간으로 동기화되어 집계됩니다. (Firebase 오프라인 환경 대체 시뮬레이션 지원)
+            <p className="text-[11px] text-brand-dark/60 leading-relaxed">
+              전 세계 에코-테스터 및 기기 사용자들의 피부 상태 진단 이력이 실시간으로 동기화되어 집계됩니다.
             </p>
           </div>
 
           {/* Core Network Counter Badges */}
-          <div className="flex flex-wrap gap-2 sm:gap-3 text-xs">
-            <div className="bg-[#1E3A41]/80 border border-[#2B545F] px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="flex flex-wrap gap-2 text-xs">
+            <div className="bg-white border border-brand-border/60 px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-xs">
+              <Users className="w-3.5 h-3.5 text-brand-primary" />
               <div>
-                <span className="text-[9px] text-[#A6C5C9] font-mono block leading-none">동시 스캔 유저</span>
-                <span className="font-bold text-white font-mono">{simulatedOnlineUsers}명</span>
+                <span className="text-[8px] text-brand-dark/45 font-mono block leading-none uppercase tracking-wider">동시 스캔 유저</span>
+                <span className="font-mono font-bold text-brand-dark text-xs">{simulatedOnlineUsers}명</span>
               </div>
             </div>
             
-            <div className="bg-[#1E3A41]/80 border border-[#2B545F] px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-sky-400 animate-pulse" />
+            <div className="bg-white border border-brand-border/60 px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-xs">
+              <Activity className="w-3.5 h-3.5 text-brand-secondary" />
               <div>
-                <span className="text-[9px] text-[#A6C5C9] font-mono block leading-none">누적 진단 스캔 수</span>
-                <span className="font-bold text-white font-mono">{totalScansCount.toLocaleString()}건</span>
+                <span className="text-[8px] text-brand-dark/45 font-mono block leading-none uppercase tracking-wider">누적 스캔 수</span>
+                <span className="font-mono font-bold text-brand-dark text-xs">{totalScansCount.toLocaleString()}건</span>
               </div>
             </div>
 
-            <div className="bg-[#1E3A41]/80 border border-[#2B545F] px-2 py-1 flex items-center gap-1.5">
+            <div className="bg-white border border-brand-border/60 px-2.5 py-1.5 rounded-xl flex items-center shadow-xs">
               <button
                 type="button"
                 onClick={handleTriggerSimulatedScan}
-                className="bg-[#007D85] hover:bg-[#00929C] text-white text-[10px] font-bold py-1 px-2.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+                className="bg-brand-primary hover:bg-brand-primary/95 text-white text-[9.5px] font-bold py-1 px-2.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
                 title="새로운 가상 유저 스캔 신호를 강제로 즉시 인젝션합니다"
               >
                 <Plus className="w-3 h-3" /> 인젝터 스캔
@@ -1158,29 +1158,29 @@ export default function AdaptiveCalibrator({
         </div>
 
         {/* Streaming Speed Control & Toggle Panel */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#1C333A] p-3 rounded-2xl border border-[#25464F]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-brand-border/40 shadow-xs">
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            <Radio className="w-4 h-4 text-emerald-400 animate-pulse flex-shrink-0" />
-            <span className="text-xs font-bold text-white whitespace-nowrap">네트워크 수신 동기화 주기:</span>
-            <div className="flex items-center gap-1 bg-[#122227] p-1 rounded-xl">
+            <Radio className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+            <span className="text-xs font-semibold text-brand-dark/85 whitespace-nowrap">네트워크 동기화 주기:</span>
+            <div className="flex items-center gap-1 bg-brand-light p-1 rounded-xl border border-brand-border/20">
               <button
                 type="button"
                 onClick={() => setStreamSpeed(4000)}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono transition-colors cursor-pointer ${streamSpeed === 4000 ? "bg-[#007D85] text-white" : "text-[#7B9C9F]"}`}
+                className={`px-2 py-0.5 rounded-md text-[9px] font-bold font-mono transition-colors cursor-pointer ${streamSpeed === 4000 ? "bg-white text-brand-primary shadow-xs" : "text-brand-dark/50 hover:text-brand-dark"}`}
               >
                 Fast (4s)
               </button>
               <button
                 type="button"
                 onClick={() => setStreamSpeed(7000)}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono transition-colors cursor-pointer ${streamSpeed === 7000 ? "bg-[#007D85] text-white" : "text-[#7B9C9F]"}`}
+                className={`px-2 py-0.5 rounded-md text-[9px] font-bold font-mono transition-colors cursor-pointer ${streamSpeed === 7000 ? "bg-white text-brand-primary shadow-xs" : "text-brand-dark/50 hover:text-brand-dark"}`}
               >
                 Normal (7s)
               </button>
               <button
                 type="button"
                 onClick={() => setStreamSpeed(12000)}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono transition-colors cursor-pointer ${streamSpeed === 12000 ? "bg-[#007D85] text-white" : "text-[#7B9C9F]"}`}
+                className={`px-2 py-0.5 rounded-md text-[9px] font-bold font-mono transition-colors cursor-pointer ${streamSpeed === 12000 ? "bg-white text-brand-primary shadow-xs" : "text-brand-dark/50 hover:text-brand-dark"}`}
               >
                 Slow (12s)
               </button>
@@ -1188,21 +1188,21 @@ export default function AdaptiveCalibrator({
           </div>
 
           <div className="flex items-center gap-2 justify-between">
-            <span className="text-[10px] text-[#A6C5C9]">실시간 동기화 상태:</span>
+            <span className="text-[10px] text-brand-dark/50">동기화 상태:</span>
             <button
               type="button"
               onClick={() => setLiveStreamingActive(prev => !prev)}
-              className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer text-white transition-all ${
-                liveStreamingActive ? "bg-[#007D85] opacity-100" : "bg-zinc-600 opacity-80"
+              className={`px-3 py-1 rounded-xl text-[10.5px] font-bold flex items-center gap-1 cursor-pointer transition-all ${
+                liveStreamingActive ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/20" : "bg-neutral-100 text-neutral-500 border border-neutral-200"
               }`}
             >
               {liveStreamingActive ? (
                 <>
-                  <Wifi className="w-3.5 h-3.5 text-emerald-300 animate-pulse" /> Live Streaming
+                  <Wifi className="w-3 h-3 text-[rgb(0,109,117)] animate-pulse" /> Live Streaming
                 </>
               ) : (
                 <>
-                  <Pause className="w-3.5 h-3.5" /> Paused
+                  <Pause className="w-3 h-3" /> Paused
                 </>
               )}
             </button>
@@ -1221,61 +1221,60 @@ export default function AdaptiveCalibrator({
               return (
                 <motion.div
                   key={event.id}
-                  initial={{ opacity: 0, y: -10, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.35 }}
-                  className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-2.5 relative ${
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-3 relative ${
                     isNewest
-                      ? "bg-[#254F57] border-[#39E5D4] shadow-[0_0_15px_rgba(57,229,212,0.15)] scale-100"
-                      : "bg-[#15282D]/85 border-[#223E45] hover:border-[#335C66]"
+                      ? "bg-[#F0F8F9] border-brand-primary shadow-sm"
+                      : "bg-white border-brand-border/60 hover:border-brand-primary/30"
                   }`}
                 >
-                  {/* Glowing signal indicator for the fresh alert */}
                   {isNewest && (
-                    <span className="absolute top-2 right-2 text-[7.5px] bg-[#39E5D4] text-[#0F1E22] font-black font-sans px-1.5 py-0.2 rounded uppercase animate-bounce">
-                      NEW DATA STREAMING
+                    <span className="absolute top-2.5 right-2.5 text-[8px] bg-brand-primary text-white font-bold font-sans px-2 py-0.5 rounded-full uppercase">
+                      New Event
                     </span>
                   )}
 
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <div className="bg-[#122428] border border-[#25484F] rounded-md px-1.5 py-0.5 flex items-center gap-1">
-                        <MapPin className="w-2.5 h-2.5 text-[#39E5D4]" />
-                        <span className="text-[10px] font-mono font-bold text-[#A6C5C9]">{event.location}</span>
+                      <div className="bg-brand-light border border-brand-border/30 rounded-lg px-2 py-0.5 flex items-center gap-1">
+                        <MapPin className="w-2.5 h-2.5 text-brand-primary" />
+                        <span className="text-[9.5px] font-mono font-semibold text-brand-dark/70">{event.location}</span>
                       </div>
-                      <span className="text-[10.5px] font-black text-white">{event.name} 님 스캔</span>
-                      <span className="text-[8.5px] font-mono text-zinc-400 ml-auto">{event.analyzedAt}</span>
+                      <span className="text-xs font-semibold text-brand-dark">{event.name} 님 스캔</span>
+                      <span className="text-[9px] font-mono text-brand-dark/40 ml-auto">{event.analyzedAt}</span>
                     </div>
 
-                    <div className="p-2 bg-[#102024] rounded-xl border border-[#203D45]/40 flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-[10px]">
-                        <span className="text-white font-bold">{
+                    <div className="p-2.5 bg-brand-light/50 rounded-xl border border-brand-border/20 flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-[11px]">
+                        <span className="text-brand-dark font-semibold">{
                           isSensitive ? "🌸 민감홍조" : isDry ? "💦 속건조형" : isOily ? "🌿 지성모공" : "✨ 중성물광"
                         }</span>
-                        <span className="text-[#A2C1C5] font-sans text-[9px]">({event.personalColor})</span>
+                        <span className="text-brand-dark/50 font-sans text-[10px]">({event.personalColor})</span>
                       </div>
-                      <div className="text-[10.5px] font-bold text-[#39E5D4] flex items-center gap-1">
+                      <div className="text-[10.5px] font-mono font-extrabold text-brand-primary flex items-center gap-1">
                         <span>수분 {event.moistureScore}%</span>
-                        <span className="text-[#203D45]">•</span>
-                        <span className="text-rose-400">홍조 {event.rednessScore}%</span>
+                        <span className="text-brand-border">•</span>
+                        <span className="text-rose-600">홍조 {event.rednessScore}%</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Recommendation telemetry with Load option */}
-                  <div className="flex items-center justify-between pt-1 border-t border-[#1B3238] gap-2">
-                    <div className="text-[9.5px] text-[#A6C5C9] line-clamp-1 max-w-[200px]">
-                      🐚 처방: <span className="font-semibold text-white">{event.cosmeticAdvice}</span>
+                  <div className="flex items-center justify-between pt-2 border-t border-brand-border/40 gap-2">
+                    <div className="text-[10px] text-brand-dark/60 line-clamp-1 max-w-[200px]">
+                      🐚 처방: <span className="font-semibold text-brand-dark">{event.cosmeticAdvice}</span>
                     </div>
 
                     <button
                       type="button"
                       onClick={() => handleLoadGlobalUserSessionToLocal(event)}
-                      className="bg-[#21434A] hover:bg-[#34626B] hover:text-white text-[#39E5D4] text-[9.5px] font-bold py-1 px-3 rounded-lg flex items-center gap-1 transition-all flex-shrink-0 cursor-pointer"
+                      className="bg-brand-primary/5 hover:bg-brand-primary hover:text-white text-brand-primary text-[10px] font-bold py-1 px-3 rounded-lg flex items-center gap-1 transition-all flex-shrink-0 cursor-pointer border border-brand-primary/10 hover:border-transparent gap-1"
                       title="이 유저의 피부 지표를 내 활성 캘리브레이터 시뮬레이션 환경으로 바로 대입 동조합니다"
                     >
-                      <Eye className="w-2.5 h-2.5" /> 기기 수치 모방
+                      <Eye className="w-3 h-3" /> 수치 모방
                     </button>
                   </div>
                 </motion.div>
@@ -1285,17 +1284,17 @@ export default function AdaptiveCalibrator({
         </div>
 
         {/* Global Live Stream Average Metric Chart */}
-        <div className="p-3 bg-[#112328] rounded-2xl border border-[#203E45]/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+        <div className="p-3 bg-white rounded-2xl border border-brand-border/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs shadow-xs">
           <div className="flex items-center gap-2">
-            <Radio className="w-3.5 h-3.5 text-rose-400 animate-pulse flex-shrink-0" />
-            <p className="text-[10px] text-[#A6C5C9] leading-relaxed">
-              <strong className="text-white">실시간 글로벌 동기화 상태:</strong> 원격 에코 테스터들의 평균 수분 복원 전정 매칭률은{" "}
-              <span className="text-emerald-300 font-bold">78.4% 임계선</span>에서 완충 유지 중입니다. (안정적 실시간 수신 수급 중)
+            <Radio className="w-3.5 h-3.5 text-emerald-500 animate-pulse flex-shrink-0" />
+            <p className="text-[10.5px] text-brand-dark/60 leading-relaxed">
+              <strong className="text-brand-dark">원격 에코 테스터 동향:</strong> 유저들의 평균 수분 복원 전정 매칭률은{" "}
+              <span className="text-brand-primary font-bold">78.4% 임계선</span>에서 안정적으로 유지 중입니다.
             </p>
           </div>
-          <div className="text-[9.5px] font-mono bg-[#1E373E] px-3 py-1 rounded-lg text-[#39E5D4] flex items-center gap-1">
+          <div className="text-[9.5px] font-mono bg-brand-light px-3 py-1 rounded-lg text-brand-primary flex items-center gap-1 border border-brand-border/30">
             <span>스냅백 릴레이 상태:</span>
-            <span className="bg-emerald-500/10 text-emerald-400 px-1 rounded uppercase font-bold tracking-widest text-[8px]">LIVE_ACTIVE</span>
+            <span className="bg-emerald-500/10 text-emerald-600 px-1 rounded uppercase font-bold tracking-widest text-[8px]">LIVE_ACTIVE</span>
           </div>
         </div>
       </div>
